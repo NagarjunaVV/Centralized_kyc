@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Centralized KYC System</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #003366, #000000, #800057);
+            color: #ffffff; /* White text for readability */
+            min-height: 100vh; /* Ensure the body covers the full viewport height */
+            display: flex;
+            flex-direction: column;
+        }
+        .navbar {
+            background: linear-gradient(135deg, #003366, #000000, #800057); /* Same gradient as the page */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+            padding: 0.8rem 1rem; /* Reduced navbar size */
+        }
+        .navbar-brand {
+            font-weight: bold;
+            color: #ffffff !important; /* White text for branding */
+            text-decoration: none !important; /* Remove underline always */
+        }
+        .navbar-brand:hover {
+            text-decoration: none !important; /* Ensure no underline on hover */
+        }
+        .nav-link {
+            text-decoration: none; /* No underline by default */
+        }
+        .nav-link:hover {
+            text-decoration: underline !important; /* Add underline on hover */
+        }
+        .btn-outline-primary {
+            color: maroon; /* Maroon text for buttons */
+            border-color: maroon;
+            background: transparent; /* Transparent background by default */
+            transition: all 0.3s ease-in-out; /* Smooth transition for hover effect */
+        }
+
+        /* Left button (blue on hover) */
+        .col-md-4:nth-child(1) .btn-outline-primary:hover {
+            background-color: #003366; /* Blue background on hover */
+            color: #ffffff; /* White text on hover */
+            border-color: #003366;
+        }
+
+        /* Middle button (blackish on hover) */
+        .col-md-4:nth-child(2) .btn-outline-primary:hover {
+            background-color: #000000; /* Blackish background on hover */
+            color: #ffffff; /* White text on hover */
+            border-color: #000000;
+        }
+
+        /* Right button (pinkish on hover) */
+        .col-md-4:nth-child(3) .btn-outline-primary:hover {
+            background-color: #800057; /* Pinkish background on hover */
+            color: #ffffff; /* White text on hover */
+            border-color: #800057;
+        }
+
+        .card {
+            border: none; /* Remove card borders */
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15); /* Add stronger shadow to cards */
+            transition: transform 0.3s ease-in-out; /* Smooth hover effect */
+        }
+
+        .card:hover {
+            transform: translateY(-10px); /* Lift card more on hover */
+        }
+
+        footer {
+            background-color: #000000; /* Black footer */
+            color: #ffffff; /* White text for footer */
+            width: 100%; /* Ensure footer spans the full width */
+            position: absolute; /* Fix footer to the bottom */
+            bottom: 0;
+            left: 0;
+        }
+
+        footer a {
+            color: maroon; /* Maroon links in footer */
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="admin_dashboard.html">Centralized KYC System</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="#" onclick="logout()">Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container my-5">
+        <div class="text-center mb-5">
+            <h1 class="display-4 fw-bold">Admin Dashboard</h1>
+            <p class="lead">Manage customers, banks, and audit logs.</p>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card text-center p-4">
+                    <div class="card-body">
+                        <h5 class="card-title fw-bold">Customer Management</h5>
+                        <p class="card-text">
+                            View and manage customer details and their KYC data.
+                        </p>
+                        <a href="customer_management.html" class="btn btn-outline-primary">Manage Customers</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center p-4">
+                    <div class="card-body">
+                        <h5 class="card-title fw-bold">Bank Management</h5>
+                        <p class="card-text">
+                            Manage bank details and their KYC-related activities.
+                        </p>
+                        <a href="bank_management.html" class="btn btn-outline-primary">Manage Banks</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center p-4">
+                    <div class="card-body">
+                        <h5 class="card-title fw-bold">Audit Logs</h5>
+                        <p class="card-text">
+                            View and analyze system audit logs for security and compliance.
+                        </p>
+                        <a href="audit_logs.html" class="btn btn-outline-primary">View Logs</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="py-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Centralized KYC System</h5>
+                    <p>Simplifying KYC verification processes for customers and banks.</p>
+                </div>
+                <div class="col-md-3">
+                    <h5>Links</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="#" onclick="alert('This feature will be implemented later.')">About Us</a></li>
+                        <li><a href="#" onclick="alert('This feature will be implemented later.')">Privacy Policy</a></li>
+                        <li><a href="#" onclick="alert('This feature will be implemented later.')">Terms of Service</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3">
+                    <h5>Contact</h5>
+                    <ul class="list-unstyled">
+                        <li>Email: info@kycsystem.com</li>
+                        <li>Phone: +1-123-456-7890</li>
+                    </ul>
+                </div>
+            </div>
+            <hr>
+            <div class="text-center">
+                <p class="mb-0">&copy; 2025 Centralized KYC System. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        function logout() {
+            // Clear session or perform logout logic here
+            window.location.replace("admin_login.html"); // Redirect to admin login page
+            history.pushState(null, null, "admin_login.html"); // Prevent back button from returning to dashboard
+        }
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bank Dashboard - Centralized KYC System</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #003366, #000000, #800057);
+            color: #ffffff; /* White text for readability */
+            min-height: 100vh; /* Ensure the body covers the full viewport height */
+            display: flex;
+            flex-direction: column;
+        }
+        .navbar {
+            background: linear-gradient(135deg, #003366, #000000, #800057); /* Same gradient as the page */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+            padding: 0.8rem 1rem; /* Reduced navbar size */
+        }
+        .navbar-brand {
+            font-weight: bold;
+            color: #ffffff !important; /* White text for branding */
+            text-decoration: none !important; /* Remove underline always */
+        }
+        .navbar-brand:hover {
+            text-decoration: none !important; /* Ensure no underline on hover */
+        }
+        .nav-link {
+            text-decoration: none; /* No underline by default */
+        }
+        .nav-link:hover {
+            text-decoration: underline !important; /* Add underline on hover */
+        }
+        .btn-outline-primary {
+            color: #000000;
+            border-color: #000000;
+            background: transparent;
+            transition: all 0.3s ease-in-out;
+        }
+
+        .btn-outline-primary:hover {
+            background-color: #000000;
+            color: #ffffff;
+            border-color: #000000;
+        }
+
+        .card {
+            border: none; /* Remove card borders */
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15); /* Add stronger shadow to cards */
+            transition: transform 0.3s ease-in-out; /* Smooth hover effect */
+        }
+
+        .card:hover {
+            transform: translateY(-10px); /* Lift card more on hover */
+        }
+
+        .card-title {
+            font-size: 1.5rem; /* Larger card titles */
+        }
+
+        footer {
+            background-color: #000000; /* Black footer */
+            color: #ffffff; /* White text for footer */
+            width: 100%; /* Ensure footer spans the full width */
+            position: absolute; /* Fix footer to the bottom */
+            bottom: 0;
+            left: 0;
+        }
+
+        footer a {
+            color: maroon; /* Maroon links in footer */
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="bank_dashboard.html">Centralized KYC System</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="#" onclick="logout()">Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container my-5">
+        <h1 class="display-4 text-center fw-bold mb-4">Bank Dashboard</h1>
+        <p class="lead text-center mb-5">Manage verification requests and review consent requests.</p>
+
+        <div class="row justify-content-center">
+            <div class="col-md-5 mb-4">
+                <div class="card text-center h-100">
+                    <div class="card-body d-flex flex-column" style="min-height: 300px; padding: 2rem;">
+                        <h3 class="card-title fw-bold mb-4">Verification Requests</h3>
+                        <p class="card-text flex-grow-1">
+                            Review and approve pending KYC verification requests from customers. 
+                            Verify uploaded documents, check customer information, and ensure compliance 
+                            with KYC regulations. Streamline the verification process for quick and 
+                            efficient customer onboarding.
+                        </p>
+                        <div class="mt-4">
+                            <a href="verification_request.html" class="btn btn-outline-primary btn-lg">
+                                View Requests
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-5 mb-4">
+                <div class="card text-center h-100">
+                    <div class="card-body d-flex flex-column" style="min-height: 300px; padding: 2rem;">
+                        <h3 class="card-title fw-bold mb-4">Consent Requests</h3>
+                        <p class="card-text flex-grow-1">
+                            Manage customer consent requests for accessing their KYC information. 
+                            Review consent history, handle new requests, and maintain transparency 
+                            in data sharing. Ensure secure and authorized access to customer 
+                            KYC documents and information.
+                        </p>
+                        <div class="mt-4">
+                            <a href="consent_requests.html" class="btn btn-outline-primary btn-lg">
+                                Manage Consents
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="py-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Centralized KYC System</h5>
+                    <p>Simplifying KYC verification processes for customers and banks.</p>
+                </div>
+                <div class="col-md-3">
+                    <h5>Links</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="#" onclick="alert('This feature will be implemented later.')">About Us</a></li>
+                        <li><a href="#" onclick="alert('This feature will be implemented later.')">Privacy Policy</a></li>
+                        <li><a href="#" onclick="alert('This feature will be implemented later.')">Terms of Service</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3">
+                    <h5>Contact</h5>
+                    <ul class="list-unstyled">
+                        <li>Email: info@kycsystem.com</li>
+                        <li>Phone: +1-123-456-7890</li>
+                    </ul>
+                </div>
+            </div>
+            <hr>
+            <div class="text-center">
+                <p class="mb-0">&copy; 2025 Centralized KYC System. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        function logout() {
+            // Clear session or perform logout logic here
+            window.location.replace("bank_login.html"); // Redirect to bank login page
+            history.pushState(null, null, "bank_login.html"); // Prevent back button from returning to dashboard
+        }
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

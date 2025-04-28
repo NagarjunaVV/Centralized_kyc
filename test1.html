@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consent Management - Centralized KYC</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.1/font/bootstrap-icons.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #003366, #000000, #800057);
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .navbar {
+            background: linear-gradient(135deg, #003366, #000000, #800057);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 0.8rem 1rem;
+        }
+        .navbar-brand {
+            font-weight: bold;
+            color: #ffffff !important;
+            text-decoration: none !important;
+        }
+        .navbar-brand:hover {
+            text-decoration: none !important;
+        }
+        .nav-link {
+            text-decoration: none;
+        }
+        .nav-link:hover {
+            text-decoration: underline !important;
+        }
+        .card {
+            border: none;
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+            background: rgba(255, 255, 255, 0.9);
+            color: #000000;
+        }
+        .card-header {
+            background: rgba(0, 0, 0, 0.1);
+            border-bottom: none;
+        }
+        .badge {
+            font-size: 0.9rem;
+            padding: 0.5em 1em;
+        }
+        footer {
+            background-color: #000000;
+            color: #ffffff;
+            width: 100%;
+            margin-top: auto;
+        }
+        .btn-info {
+            background-color: #003366;
+            border-color: #003366;
+            color: white;
+        }
+        .btn-info:hover {
+            background-color: #002244;
+            border-color: #002244;
+            color: white;
+        }
+        .table {
+            color: #000000;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="customer_dashboard.html">Centralized KYC System</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="kyc_documents.html">KYC Documents</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="approval_status.html">Approval Status</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="#" onclick="logout()">Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container my-5">
+        <div class="text-center mb-5">
+            <h1 class="display-4 fw-bold">Consent Management</h1>
+            <p class="lead">Manage your KYC data sharing consents with banks</p>
+        </div>
+
+        <!-- Consent Dashboard -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card bg-light border-success h-100">
+                    <div class="card-body text-center">
+                        <h3 class="card-title text-success">
+                            <i class="bi bi-check-circle"></i> Active Consents
+                        </h3>
+                        <h2 class="display-4" id="grantedCount">0</h2>
+                        <p class="card-text">Banks with access to your KYC data</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card bg-light border-danger h-100">
+                    <div class="card-body text-center">
+                        <h3 class="card-title text-danger">
+                            <i class="bi bi-x-circle"></i> Revoked Consents
+                        </h3>
+                        <h2 class="display-4" id="revokedCount">0</h2>
+                        <p class="card-text">Banks with revoked access</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Consent Table -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Consent Records</h5>
+                <button class="btn btn-success" onclick="showNewConsentModal()">
+                    <i class="bi bi-plus-circle"></i> New Consent
+                </button>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Consent ID</th>
+                                <th>Bank</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="consent-list">
+                            <!-- Consent data will be dynamically loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Consent Modal -->
+    <div class="modal fade" id="newConsentModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Grant New Consent</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="newConsentForm">
+                        <div class="mb-3">
+                            <label for="bankSelect" class="form-label">Select Bank</label>
+                            <select class="form-select" id="bankSelect" required>
+                                <!-- Banks will be loaded dynamically -->
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-success" onclick="grantConsent()">Grant Consent</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="py-4">
+        <div class="container">
+            <div class="text-center">
+                <p class="mb-0">&copy; 2025 Centralized KYC System. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let consentModal;
+
+        async function loadConsents() {
+            try {
+                const response = await fetch('/api/consents');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch consent data');
+                }
+
+                const consents = await response.json();
+                updateDashboard(consents);
+                updateConsentTable(consents);
+            } catch (error) {
+                console.error('Error loading consents:', error);
+                alert('Failed to load consent data. Please try again later.');
+            }
+        }
+
+        function updateDashboard(consents) {
+            const granted = consents.filter(c => c.consent_status === 'Granted').length;
+            const revoked = consents.filter(c => c.consent_status === 'Revoked').length;
+
+            document.getElementById('grantedCount').textContent = granted;
+            document.getElementById('revokedCount').textContent = revoked;
+        }
+
+        function updateConsentTable(consents) {
+            const consentList = document.getElementById('consent-list');
+            consentList.innerHTML = '';
+
+            consents.forEach(consent => {
+                const row = `
+                    <tr>
+                        <td>${consent.consent_id}</td>
+                        <td>${consent.bank_name}</td>
+                        <td>
+                            <span class="badge ${consent.consent_status === 'Granted' ? 'bg-success' : 'bg-danger'}">
+                                ${consent.consent_status}
+                            </span>
+                        </td>
+                        <td>${new Date(consent.consent_date).toLocaleString()}</td>
+                        <td>
+                            ${consent.consent_status === 'Granted' ? 
+                                `<button class="btn btn-sm btn-danger" onclick="revokeConsent(${consent.consent_id})">
+                                    Revoke
+                                </button>` : 
+                                `<button class="btn btn-sm btn-success" onclick="reactivateConsent(${consent.consent_id})">
+                                    Reactivate
+                                </button>`
+                            }
+                        </td>
+                    </tr>
+                `;
+                consentList.innerHTML += row;
+            });
+        }
+
+        async function loadBanks() {
+            try {
+                const response = await fetch('/api/banks');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch banks');
+                }
+
+                const banks = await response.json();
+                const bankSelect = document.getElementById('bankSelect');
+                bankSelect.innerHTML = '<option value="">Select a bank...</option>';
+
+                banks.forEach(bank => {
+                    bankSelect.innerHTML += `
+                        <option value="${bank.bank_id}">${bank.bank_name}</option>
+                    `;
+                });
+            } catch (error) {
+                console.error('Error loading banks:', error);
+                alert('Failed to load banks. Please try again later.');
+            }
+        }
+
+        function showNewConsentModal() {
+            loadBanks();
+            consentModal = new bootstrap.Modal(document.getElementById('newConsentModal'));
+            consentModal.show();
+        }
+
+        async function grantConsent(bankId) {
+            if (!bankId) {
+                alert('Please select a bank');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/consents', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ bankId }),
+                });
+
+                if (response.ok) {
+                    await createAuditLog('Consent granted to bank ID: ' + bankId, 'Customer');
+                    loadConsents();
+                } else {
+                    throw new Error('Failed to grant consent');
+                }
+            } catch (error) {
+                console.error('Error granting consent:', error);
+                alert('Failed to grant consent. Please try again later.');
+            }
+        }
+
+        async function revokeConsent(consentId) {
+            if (!confirm('Are you sure you want to revoke this consent?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/consents/${consentId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ status: 'Revoked' }),
+                });
+
+                if (response.ok) {
+                    await createAuditLog('Consent revoked: ID ' + consentId, 'Customer');
+                    loadConsents();
+                } else {
+                    throw new Error('Failed to revoke consent');
+                }
+            } catch (error) {
+                console.error('Error revoking consent:', error);
+                alert('Failed to revoke consent. Please try again later.');
+            }
+        }
+
+        async function reactivateConsent(consentId) {
+            try {
+                const response = await fetch(`/api/consents/${consentId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ status: 'Granted' }),
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to reactivate consent');
+                }
+
+                await loadConsents();
+                alert('Consent reactivated successfully');
+            } catch (error) {
+                console.error('Error reactivating consent:', error);
+                alert('Failed to reactivate consent. Please try again later.');
+            }
+        }
+
+        function logout() {
+            window.location.replace("customer_login.html");
+        }
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', loadConsents);
+    </script>
+    <script src="js/audit-logger.js"></script>
+</body>
+</html>

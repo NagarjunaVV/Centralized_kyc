@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Approval Status Management - Centralized KYC</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.1/font/bootstrap-icons.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #003366, #000000, #800057);
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .navbar {
+            background: linear-gradient(135deg, #003366, #000000, #800057);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 0.8rem 1rem;
+        }
+        .navbar-brand {
+            font-weight: bold;
+            color: #ffffff !important;
+            text-decoration: none !important;
+        }
+        .navbar-brand:hover {
+            text-decoration: none !important;
+        }
+        .nav-link {
+            text-decoration: none;
+        }
+        .nav-link:hover {
+            text-decoration: underline !important;
+        }
+        .card {
+            border: none;
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+            background: rgba(255, 255, 255, 0.9);
+            color: #000000;
+        }
+        .card-header {
+            background: rgba(0, 0, 0, 0.1);
+            border-bottom: none;
+        }
+        .badge {
+            font-size: 0.9rem;
+            padding: 0.5em 1em;
+        }
+        footer {
+            background-color: #000000;
+            color: #ffffff;
+            width: 100%;
+            margin-top: auto;
+            padding: 1.5rem 0;
+        }
+        footer a {
+            color: maroon;
+            text-decoration: none;
+        }
+        footer a:hover {
+            text-decoration: underline;
+        }
+        .table {
+            color: #000000;
+        }
+        .btn-info {
+            background-color: #003366;
+            border-color: #003366;
+            color: white;
+        }
+        .btn-info:hover {
+            background-color: #002244;
+            border-color: #002244;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="customer_dashboard.html">Centralized KYC System</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="kyc_documents.html">KYC Documents</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="consent_management.html">Consent Management</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="#" onclick="logout()">Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container my-5">
+        <div class="text-center mb-5">
+            <h1 class="display-4 fw-bold">Approval Status Management</h1>
+            <p class="lead">Track the status of KYC verification approvals.</p>
+        </div>
+
+        <!-- Status Dashboard -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card bg-light border-warning h-100">
+                    <div class="card-body text-center">
+                        <h3 class="card-title text-warning">
+                            <i class="bi bi-hourglass-split"></i> Pending
+                        </h3>
+                        <h2 class="display-4" id="pendingCount">0</h2>
+                        <p class="card-text">Verification requests awaiting review</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-light border-success h-100">
+                    <div class="card-body text-center">
+                        <h3 class="card-title text-success">
+                            <i class="bi bi-check-circle"></i> Approved
+                        </h3>
+                        <h2 class="display-4" id="approvedCount">0</h2>
+                        <p class="card-text">Successfully verified requests</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-light border-danger h-100">
+                    <div class="card-body text-center">
+                        <h3 class="card-title text-danger">
+                            <i class="bi bi-x-circle"></i> Rejected
+                        </h3>
+                        <h2 class="display-4" id="rejectedCount">0</h2>
+                        <p class="card-text">Requests that didn't meet verification criteria</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Table -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>Approval Status Records</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Request ID</th>
+                                <th>Bank</th>
+                                <th>Document Type</th>
+                                <th>Submission Date</th>
+                                <th>Verified By</th>
+                                <th>Verification Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="approval-status-list">
+                            <!-- Approval status data will be dynamically loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="py-4">
+        <div class="container">
+            <div class="text-center">
+                <p class="mb-0">&copy; 2025 Centralized KYC System. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        async function loadApprovalStatus() {
+            try {
+                const response = await fetch('/api/approval-status');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch approval status data');
+                }
+
+                const statuses = await response.json();
+                updateDashboardCounts(statuses);
+                updateStatusTable(statuses);
+            } catch (error) {
+                console.error('Error loading approval status:', error);
+                alert('Failed to load approval status. Please try again later.');
+            }
+        }
+
+        function updateDashboardCounts(statuses) {
+            let pending = 0, approved = 0, rejected = 0;
+
+            statuses.forEach(status => {
+                switch(status.status) {
+                    case 'Pending': pending++; break;
+                    case 'Approved': approved++; break;
+                    case 'Rejected': rejected++; break;
+                }
+            });
+
+            document.getElementById('pendingCount').textContent = pending;
+            document.getElementById('approvedCount').textContent = approved;
+            document.getElementById('rejectedCount').textContent = rejected;
+        }
+
+        function updateStatusTable(statuses) {
+            const statusList = document.getElementById('approval-status-list');
+            statusList.innerHTML = '';
+
+            if (statuses.length === 0) {
+                statusList.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="text-center">No approval status records found</td>
+                    </tr>
+                `;
+                return;
+            }
+
+            statuses.forEach(status => {
+                const row = `
+                    <tr>
+                        <td>${status.request_id}</td>
+                        <td>${status.bank_name}</td>
+                        <td>${new Date(status.request_date).toLocaleDateString()}</td>
+                        <td>
+                            <span class="badge ${getBadgeClass(status.status)}">
+                                ${status.status}
+                            </span>
+                        </td>
+                        <td>${status.verified_by || '-'}</td>
+                        <td>${status.verification_date ? new Date(status.verification_date).toLocaleDateString() : '-'}</td>
+                        <td>
+                            <button class="btn btn-sm btn-info" onclick="viewDetails(${status.request_id})">
+                                <i class="bi bi-info-circle"></i> Details
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                statusList.innerHTML += row;
+            });
+        }
+
+        function getBadgeClass(status) {
+            switch(status) {
+                case 'Approved': return 'bg-success';
+                case 'Rejected': return 'bg-danger';
+                default: return 'bg-warning text-dark';
+            }
+        }
+
+        function viewDetails(requestId) {
+            alert('This feature will be implemented later');
+        }
+
+        // Load approval status when the page loads
+        document.addEventListener('DOMContentLoaded', loadApprovalStatus);
+
+        function logout() {
+            window.location.replace("customer_login.html");
+        }
+    </script>
+    <script src="js/audit-logger.js"></script>
+</body>
+</html>

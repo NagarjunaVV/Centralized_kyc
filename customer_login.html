@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Login - Centralized KYC System</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #003366, #000000, #800057);
+            color: #ffffff; /* White text for readability */
+            min-height: 100vh; /* Ensure the body covers the full viewport height */
+            display: flex;
+            flex-direction: column;
+        }
+        .navbar {
+            background: linear-gradient(135deg, #003366, #000000, #800057); /* Same gradient as the page */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+            padding: 0.8rem 1rem; /* Reduced navbar size */
+        }
+        .navbar-brand {
+            font-weight: bold;
+            color: #ffffff !important; /* White text for branding */
+            text-decoration: none !important; /* Remove underline always */
+        }
+        .navbar-brand:hover {
+            text-decoration: none !important; /* Ensure no underline on hover */
+        }
+        .card {
+            border: none; /* Remove card borders */
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15); /* Add stronger shadow to cards */
+            /* Removed the transition and hover effect */
+            margin: 0 auto; /* Center the card horizontally */
+            max-width: 450px; /* Control maximum width */
+        }
+        /* Removed the card:hover rule that was causing the movement */
+        .card-header {
+            background-color: #003366; /* Blue background for header */
+            color: #ffffff; /* White text for header */
+        }
+        .btn-primary {
+            color: maroon; /* Maroon text for buttons */
+            background: transparent; /* Transparent background by default */
+            border: 2px solid #800057; /* Maroon border */
+            transition: all 0.3s ease-in-out; /* Smooth transition for hover effect */
+        }
+        .btn-primary:hover {
+            background: #800057; /* Maroon background on hover */
+            border-color: transparent;
+        }
+        a {
+            color: #800057; /* Maroon color for links */
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        footer {
+            background-color: #000000; /* Black footer */
+            color: #ffffff; /* White text for footer */
+            width: 100%; /* Ensure footer spans the full width */
+            position: relative;
+            margin-top: auto; /* Push footer to the bottom of the page */
+        }
+        footer a {
+            color: maroon; /* Maroon links in footer */
+            text-decoration: none;
+        }
+        footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">Centralized KYC System</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active text-white" href="index.html">Home</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container my-5">
+        <div class="card text-center p-4">
+            <div class="card-header">
+                <h4 class="mb-0">Customer Login</h4>
+            </div>
+            <div class="card-body">
+                <form id="loginForm">
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email address</label>
+                        <input type="email" class="form-control" id="email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="password" required>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">Login</button>
+                    </div>
+                </form>
+                <div class="mt-3 text-center">
+                    <a href="#" onclick="alert('Feature will be implemented later.')">Forgot password?</a>
+                    <p class="mt-3 mb-0">Don't have an account? <a href="customer_register.html">Register</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="py-4">
+        <div class="container text-center">
+            <p class="mb-0">&copy; 2025 Centralized KYC System. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password }),
+                });
+
+                const result = await response.json();
+                if (response.ok) {
+                    await createAuditLog('Customer login successful', 'Customer');
+                    window.location.href = 'customer_dashboard.html';
+                } else {
+                    alert(result.error || 'Login failed');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            }
+        });
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="js/audit-logger.js"></script>
+</body>
+</html>

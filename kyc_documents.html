@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KYC Documents Management - Centralized KYC</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #003366, #000000, #800057);
+            color: #ffffff; /* White text for readability */
+            min-height: 100vh; /* Ensure the body covers the full viewport height */
+            display: flex;
+            flex-direction: column;
+        }
+        .navbar {
+            background: linear-gradient(135deg, #003366, #000000, #800057); /* Same gradient as the page */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+            padding: 0.8rem 1rem; /* Reduced navbar size */
+        }
+        .navbar-brand {
+            font-weight: bold;
+            color: #ffffff !important; /* White text for branding */
+            text-decoration: none !important; /* Remove underline always */
+        }
+        .navbar-brand:hover {
+            text-decoration: none !important; /* Ensure no underline on hover */
+        }
+        .nav-link {
+            text-decoration: none; /* No underline by default */
+        }
+        .nav-link:hover {
+            text-decoration: underline !important; /* Add underline on hover */
+        }
+        .card {
+            border: none; /* Remove card borders */
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15); /* Add stronger shadow to cards */
+        }
+        footer {
+            background-color: #000000; /* Black footer */
+            color: #ffffff; /* White text for footer */
+            width: 100%; /* Ensure footer spans the full width */
+            margin-top: auto; /* Push footer to the bottom */
+        }
+        footer a {
+            color: maroon; /* Maroon links in footer */
+            text-decoration: none;
+        }
+        footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="customer_dashboard.html">Centralized KYC System</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="approval_status.html">Approval Status</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="consent_management.html">Consent Management</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="#" onclick="logout()">Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container my-5">
+        <div class="text-center mb-5">
+            <h1 class="display-4 fw-bold">KYC Documents Management</h1>
+            <p class="lead">Upload and manage your KYC documents for verification.</p>
+        </div>
+
+        <div class="card mb-5">
+            <div class="card-header">
+                <h5>Upload Your KYC Documents</h5>
+            </div>
+            <div class="card-body">
+                <form id="kycUploadForm" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="documentType" class="form-label">Document Type</label>
+                        <select class="form-select" id="documentType" name="documentType" required>
+                            <option value="">Select document type...</option>
+                            <option value="Aadhar">Aadhar</option>
+                            <option value="PAN">PAN</option>
+                            <option value="Passport">Passport</option>
+                            <option value="Voter ID">Voter ID</option>
+                        </select>
+                        <div class="form-text text-muted">
+                            Note: Uploading a new document of the same type will replace the existing one.
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="documentNumber" class="form-label">Document Number</label>
+                        <input type="text" class="form-control" id="documentNumber" name="documentNumber" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="documentFile" class="form-label">Upload Document</label>
+                        <input type="file" class="form-control" id="documentFile" name="documentFile" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Upload</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h5>Your Uploaded Documents</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Document ID</th>
+                                <th>Document Type</th>
+                                <th>Document Number</th>
+                                <th>Upload Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="kyc-document-list">
+                            <!-- Uploaded documents will be dynamically loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="py-4">
+        <div class="container">
+            <div class="text-center">
+                <p class="mb-0">&copy; 2025 Centralized KYC System. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.getElementById('kycUploadForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            
+            const submitButton = this.querySelector('button[type="submit"]');
+            const documentType = document.getElementById('documentType').value;
+            
+            try {
+                // Check if document type already exists
+                const response = await fetch('/api/kyc-documents');
+                const existingDocs = await response.json();
+                const hasExistingDoc = existingDocs.some(doc => doc.document_type === documentType);
+                
+                if (hasExistingDoc) {
+                    if (!confirm(`A ${documentType} document already exists. Do you want to replace it?`)) {
+                        return;
+                    }
+                }
+
+                submitButton.disabled = true;
+                submitButton.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Uploading...';
+
+                const formData = new FormData(this);
+
+                const uploadResponse = await fetch('/api/kyc-documents', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                const result = await uploadResponse.json();
+
+                if (!uploadResponse.ok) {
+                    throw new Error(result.error || 'Failed to upload document');
+                }
+
+                alert(result.message);
+                if (result.warning) {
+                    console.info(result.warning);
+                }
+                
+                this.reset();
+                await loadKYCDocuments();
+                
+            } catch (error) {
+                console.error('Error uploading document:', error);
+                alert(error.message);
+            } finally {
+                submitButton.disabled = false;
+                submitButton.innerHTML = 'Upload';
+            }
+        });
+
+        async function loadKYCDocuments() {
+            try {
+                const response = await fetch('/api/kyc-documents');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch KYC documents');
+                }
+
+                const documents = await response.json();
+                const documentList = document.getElementById('kyc-document-list');
+                documentList.innerHTML = '';
+
+                documents.forEach(doc => {
+                    documentList.innerHTML += updateDocumentRow(doc);
+                });
+            } catch (error) {
+                console.error('Error loading KYC documents:', error);
+                alert('Failed to load KYC documents. Please try again later.');
+            }
+        }
+
+        function getStatusBadgeClass(status) {
+            switch (status) {
+                case 'Verified':
+                    return 'bg-success';
+                case 'Rejected':
+                    return 'bg-danger';
+                default:
+                    return 'bg-warning text-dark'; // Pending or any other status
+            }
+        }
+
+        async function deleteDocument(docId) {
+            if (!confirm('Are you sure you want to delete this document?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/kyc-documents/${docId}`, {
+                    method: 'DELETE',
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to delete document');
+                }
+
+                alert('Document deleted successfully');
+                await loadKYCDocuments(); // Reload the documents and update available options
+            } catch (error) {
+                console.error('Error deleting document:', error);
+                alert('Failed to delete document. Please try again later.');
+            }
+        }
+
+        function viewDocument(filePath) {
+            if (!filePath) {
+                alert('Document file not found');
+                return;
+            }
+            // Add the /uploads/ prefix here when opening the document
+            window.open(`/uploads/${filePath}`, '_blank');
+        }
+
+        function logout() {
+            window.location.replace("customer_login.html");
+        }
+
+        // Load documents when the page loads
+        document.addEventListener('DOMContentLoaded', loadKYCDocuments);
+
+        async function requestVerification(documentId) {
+            selectedDocumentId = documentId;
+            if (!bankModal) {
+                bankModal = new bootstrap.Modal(document.getElementById('bankSelectionModal'));
+            }
+            loadBanks();
+            bankModal.show();
+        }
+
+        async function submitVerificationRequest() {
+            const bankId = document.getElementById('bankSelect').value;
+            if (!bankId) {
+                alert('Please select a bank');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/verification-requests', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        documentId: selectedDocumentId,
+                        bankId: bankId
+                    })
+                });
+
+                if (!response.ok) throw new Error('Failed to submit verification request');
+
+                bankModal.hide();
+                alert('Verification request submitted successfully');
+                loadKYCDocuments();
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to submit verification request');
+            }
+        }
+
+        function updateDocumentRow(doc) {
+            return `
+                <tr>
+                    <td>${doc.document_id}</td>
+                    <td>${doc.document_type}</td>
+                    <td>${doc.document_number}</td>
+                    <td>${new Date(doc.upload_date).toLocaleDateString()}</td>
+                    <td>
+                        <div class="btn-group">
+                            <button class="btn btn-sm btn-info" onclick="viewDocument('${doc.file_path}')">
+                                <i class="bi bi-eye"></i> View
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteDocument(${doc.document_id})">
+                                <i class="bi bi-trash"></i> Delete
+                            </button>
+                            ${doc.verification_status !== 'Approved' ? `
+                                <button class="btn btn-sm btn-success" onclick="showBankSelectionModal(${doc.document_id})">
+                                    ${doc.verification_status === 'Pending' ? 'Pending Verification' : 'Request Verification'}
+                                </button>
+                            ` : '<span class="badge bg-success">Verified</span>'}
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="js/audit-logger.js"></script>
+
+    <!-- Add this modal to kyc_documents.html -->
+    <div class="modal fade" id="bankSelectionModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Select Bank for Verification</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="bankSelect" class="form-label">Choose Bank</label>
+                        <select class="form-select" id="bankSelect" required>
+                            <option value="">Select a bank...</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="submitVerificationRequest()">Submit Request</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add these JavaScript functions -->
+    <script>
+    let selectedDocumentId = null;
+    let bankModal = null;
+
+    async function loadBanks() {
+        try {
+            const response = await fetch('/api/banks/available');
+            if (!response.ok) throw new Error('Failed to fetch banks');
+            
+            const banks = await response.json();
+            const bankSelect = document.getElementById('bankSelect');
+            bankSelect.innerHTML = '<option value="">Select a bank...</option>';
+            
+            banks.forEach(bank => {
+                bankSelect.innerHTML += `
+                    <option value="${bank.bank_id}">
+                        ${bank.bank_name} ${bank.branch ? `- ${bank.branch}` : ''}
+                    </option>
+                `;
+            });
+        } catch (error) {
+            console.error('Error loading banks:', error);
+            alert('Failed to load available banks');
+        }
+    }
+
+    function showBankSelectionModal(documentId) {
+        selectedDocumentId = documentId;
+        if (!bankModal) {
+            bankModal = new bootstrap.Modal(document.getElementById('bankSelectionModal'));
+        }
+        loadBanks();
+        bankModal.show();
+    }
+
+    async function submitVerificationRequest() {
+        const bankId = document.getElementById('bankSelect').value;
+        if (!bankId) {
+            alert('Please select a bank');
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/verification-requests', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    documentId: selectedDocumentId,
+                    bankId: bankId
+                })
+            });
+
+            if (!response.ok) throw new Error('Failed to submit verification request');
+
+            bankModal.hide();
+            alert('Verification request submitted successfully');
+            loadKYCDocuments();
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Failed to submit verification request');
+        }
+    }
+    </script>
+
+</body>
+</html>
