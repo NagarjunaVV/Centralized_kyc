@@ -178,8 +178,8 @@
                         <td>${bank.bank_id}</td>
                         <td>${bank.bank_name}</td>
                         <td>${bank.branch || 'N/A'}</td>
-                        <td>${bank.contact_email}</td>
-                        <td>${new Date(bank.registered_at).toLocaleDateString()}</td>
+                        <td>${bank.contact_email || 'N/A'}</td>
+                        <td>${bank.registered_at ? new Date(bank.registered_at).toLocaleDateString() : 'N/A'}</td>
                         <td>
                             <div class="btn-group">
                                 <button class="btn btn-sm btn-secondary" onclick="showImplementedLater()">

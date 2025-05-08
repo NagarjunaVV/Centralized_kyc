@@ -369,7 +369,12 @@ app.get('/api/customers', async (req, res) => {
 // Keep only this simplified version of the banks endpoint
 app.get('/api/banks', (req, res) => {
     const query = `
-        SELECT bank_id, bank_name 
+        SELECT 
+            bank_id, 
+            bank_name, 
+            branch, 
+            contact_email, 
+            registered_at 
         FROM Banks
         ORDER BY bank_name ASC
     `;
