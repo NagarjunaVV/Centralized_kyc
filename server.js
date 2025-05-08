@@ -668,21 +668,41 @@ app.post('/api/kyc-documents', upload.single('documentFile'), async (req, res) =
 
     try {
         await db.promise().beginTransaction();
+
+        // Find existing doc of this type for this customer
         const [existingDocs] = await db.promise().query(
             'SELECT document_id, file_path FROM KYC_Documents WHERE customer_id = ? AND document_type = ?',
             [customerId, documentType]
         );
         if (existingDocs.length > 0) {
+            const oldDocId = existingDocs[0].document_id;
             const oldFilePath = path.join(uploadDir, existingDocs[0].file_path);
+
+            // Delete Approval_Status for this doc
+            await db.promise().query(
+                `DELETE FROM Approval_Status 
+                 WHERE request_id IN (
+                    SELECT request_id FROM Verification_Requests WHERE document_id = ?
+                 )`,
+                [oldDocId]
+            );
+            // Delete Verification_Requests for this doc
+            await db.promise().query(
+                'DELETE FROM Verification_Requests WHERE document_id = ?',
+                [oldDocId]
+            );
+            // Delete the old document
+            await db.promise().query(
+                'DELETE FROM KYC_Documents WHERE document_id = ?',
+                [oldDocId]
+            );
+            // Remove the old file
             if (fs.existsSync(oldFilePath)) {
                 fs.unlinkSync(oldFilePath);
             }
-
-            await db.promise().query(
-                'DELETE FROM KYC_Documents WHERE document_id = ?',
-                [existingDocs[0].document_id]
-            );
         }
+
+        // Insert new document with status 'Pending'
         const insertQuery = `
             INSERT INTO KYC_Documents (
                 customer_id, 
@@ -701,7 +721,7 @@ app.post('/api/kyc-documents', upload.single('documentFile'), async (req, res) =
         ]);
 
         await db.promise().commit();
-        res.json({ message: 'Document uploaded successfully' });
+        res.json({ message: 'Document uploaded successfully. Please apply for verification.' });
 
     } catch (error) {
         await db.promise().rollback();
