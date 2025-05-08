@@ -258,19 +258,16 @@ app.get('/api/audit-logs', (req, res) => {
         ORDER BY al.timestamp DESC
         LIMIT 1000
     `;
-
     db.query(query, (err, results) => {
         if (err) {
             console.error('Error fetching audit logs:', err.message);
             res.status(500).json({ error: 'Failed to fetch audit logs' });
             return;
         }
-
         results = results.map(log => ({
             ...log,
             user_id: log.user_name || log.user_id
         }));
-
         res.json(results);
     });
 });

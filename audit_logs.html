@@ -130,22 +130,14 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Add improved error handling and logging
         async function loadAuditLogs() {
             try {
                 const response = await fetch('/api/audit-logs');
-                console.log('Audit logs response status:', response.status);
-                
                 if (!response.ok) {
                     const errorData = await response.json();
-                    console.error('Server error:', errorData);
                     throw new Error(errorData.error || 'Failed to fetch audit logs');
                 }
-
                 const logs = await response.json();
-                console.log('Received logs count:', logs.length);
-                
-                // Remove the updateDashboard call as we removed the dashboard
                 updateLogsTable(logs);
             } catch (error) {
                 console.error('Error in loadAuditLogs:', error);
