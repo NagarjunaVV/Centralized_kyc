@@ -252,11 +252,10 @@
         }
 
         function viewDocument(filePath) {
-            if (!filePath) {
+            if (!filePath || filePath === 'undefined') {
                 alert('Document file not found');
                 return;
             }
-            // Add the /uploads/ prefix here when opening the document
             window.open(`/uploads/${filePath}`, '_blank');
         }
 
@@ -311,8 +310,13 @@
                 <tr>
                     <td>${doc.document_id}</td>
                     <td>${doc.document_type}</td>
-                    <td>${doc.document_number}</td>
-                    <td>${new Date(doc.upload_date).toLocaleDateString()}</td>
+                    <td>${doc.document_number || 'N/A'}</td>
+                    <td>${doc.upload_date ? new Date(doc.upload_date).toLocaleDateString() : 'N/A'}</td>
+                    <td>
+                        <span class="badge ${getStatusBadgeClass(doc.verification_status)}">
+                            ${doc.verification_status || 'Pending'}
+                        </span>
+                    </td>
                     <td>
                         <div class="btn-group">
                             <button class="btn btn-sm btn-info" onclick="viewDocument('${doc.file_path}')">

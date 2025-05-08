@@ -16,8 +16,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // Ensure uploads directory exists
 const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir);
-    console.log('Uploads directory created successfully');
+    fs.mkdirSync(uploadDir, { recursive: true });
 }
 
 // Middleware to parse JSON and form data
@@ -705,13 +704,11 @@ app.post('/api/kyc-documents', upload.single('documentFile'), async (req, res) =
 
         // If document exists, delete old file and record
         if (existingDocs.length > 0) {
-            // Delete old file
             const oldFilePath = path.join(uploadDir, existingDocs[0].file_path);
-            fs.unlink(oldFilePath, (err) => {
-                if (err) console.error('Error deleting old file:', err);
-            });
+            if (fs.existsSync(oldFilePath)) {
+                fs.unlinkSync(oldFilePath);
+            }
 
-            // Delete old document record
             await db.promise().query(
                 'DELETE FROM KYC_Documents WHERE document_id = ?',
                 [existingDocs[0].document_id]
@@ -737,18 +734,14 @@ app.post('/api/kyc-documents', upload.single('documentFile'), async (req, res) =
         ]);
 
         await db.promise().commit();
-        res.json({ 
-            message: 'Document uploaded successfully',
-            warning: existingDocs.length > 0 ? 'Previous document was replaced' : null
-        });
+        res.json({ message: 'Document uploaded successfully' });
 
     } catch (error) {
         await db.promise().rollback();
         // Delete uploaded file if database operation fails
-        if (req.file) {
-            fs.unlink(req.file.path, (err) => {
-                if (err) console.error('Error deleting uploaded file:', err);
-            });
+        const filePath = path.join(uploadDir, req.file.filename);
+        if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
         }
         console.error('Error uploading document:', error);
         res.status(500).json({ error: 'Failed to upload document' });
@@ -931,3 +924,11 @@ app.get('/api/consent-requests/stats', async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch consent request stats' });
     }
 });
+
+function viewDocument(filePath) {
+    if (!filePath || filePath === 'undefined') {
+        alert('Document file not found');
+        return;
+    }
+    window.open(`/uploads/${filePath}`, '_blank');
+}

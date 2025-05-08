@@ -12,8 +12,6 @@ CREATE TABLE Customers (
 );
 select * from customers;
 
-
-
 CREATE TABLE Banks (
     bank_id INT PRIMARY KEY AUTO_INCREMENT,
     bank_name VARCHAR(100) NOT NULL,
@@ -35,7 +33,6 @@ ALTER TABLE KYC_Documents ADD COLUMN file_path VARCHAR(255) NOT NULL;
 ALTER TABLE KYC_Documents 
 ADD COLUMN verification_status ENUM('Pending', 'Approved', 'Rejected') 
 DEFAULT 'Pending';
-
 
 CREATE TABLE Verification_Requests (
     request_id INT PRIMARY KEY AUTO_INCREMENT,
@@ -99,8 +96,6 @@ CREATE TABLE User_Authentication (
 select * from user_authentication;
 CREATE TABLE consent_requests (
     request_id INT AUTO_INCREMENT PRIMARY KEY,
-    customer_name VARCHAR(255) NOT NULL,
-    bank_name VARCHAR(255) NOT NULL,
     request_date DATETIME DEFAULT CURRENT_TIMESTAMP,
     status ENUM('Pending', 'Approved', 'Rejected') DEFAULT 'Pending'
 );
@@ -113,8 +108,6 @@ ALTER TABLE consent_requests
 ADD COLUMN customer_id INT,
 ADD FOREIGN KEY (customer_id) REFERENCES Customers(customer_id);
 
-
-
 CREATE TABLE Audit_Logs (
     log_id INT PRIMARY KEY AUTO_INCREMENT,
     user_id INT,
@@ -125,5 +118,4 @@ CREATE TABLE Audit_Logs (
     FOREIGN KEY (user_id) REFERENCES User_Authentication(user_id) ON DELETE CASCADE
 );
 select * from audit_logs;
-ALTER TABLE consent_requests MODIFY customer_name VARCHAR(255) NULL;
-ALTER TABLE consent_requests MODIFY bank_name VARCHAR(255) NULL;
+
