@@ -932,3 +932,31 @@ function viewDocument(filePath) {
     }
     window.open(`/uploads/${filePath}`, '_blank');
 }
+
+// Update verification request status (approve/reject)
+app.put('/api/verification-requests/:requestId/status', async (req, res) => {
+    const { requestId } = req.params;
+    const { status } = req.body;
+
+    if (!['Approved', 'Rejected'].includes(status)) {
+        return res.status(400).json({ error: 'Invalid status' });
+    }
+
+    try {
+        const [result] = await db.promise().query(
+            `UPDATE Approval_Status 
+             SET status = ?, verified_by = 'Bank Official', verification_date = NOW()
+             WHERE request_id = ?`,
+            [status, requestId]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'Verification request not found' });
+        }
+
+        res.json({ message: `Verification request ${status.toLowerCase()} successfully` });
+    } catch (error) {
+        console.error('Error updating verification request status:', error);
+        res.status(500).json({ error: 'Failed to update verification request status' });
+    }
+});
