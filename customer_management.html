@@ -213,7 +213,6 @@
         }
 
         function getActionButtons(doc) {
-            // Only show Accept/Reject for Pending (i.e., after Apply for Verification)
             if (doc.verification_status === 'Pending' && doc.request_id) {
                 return `
                     <div class="btn-group">
@@ -225,6 +224,10 @@
                         </button>
                     </div>
                 `;
+            }
+            // After Accept or Reject, show "Completed"
+            if (doc.verification_status === 'Approved' || doc.verification_status === 'Rejected') {
+                return `<span class="badge bg-primary">Completed</span>`;
             }
             // For all other statuses (including Not Applied), show info badge
             return '<span class="badge bg-secondary">Not Sent for Verification</span>';

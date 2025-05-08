@@ -308,7 +308,6 @@
         function updateDocumentRow(doc) {
             let actionButtons = '';
 
-            // Default state: Show "Apply for Verification" button
             if (!doc.verification_status || doc.verification_status === 'Not Applied') {
                 actionButtons = `
                     <button class="btn btn-sm btn-success" onclick="applyForVerification(${doc.document_id})">
@@ -327,9 +326,7 @@
                 `;
             } else if (doc.verification_status === 'Rejected') {
                 actionButtons = `
-                    <button class="btn btn-sm btn-success" onclick="applyForVerification(${doc.document_id})">
-                        Apply for Verification
-                    </button>
+                    <span class="badge bg-danger">Rejected</span>
                 `;
             }
 
