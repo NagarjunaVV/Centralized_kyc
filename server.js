@@ -388,10 +388,16 @@ app.get('/api/banks', (req, res) => {
 app.get('/api/kyc-documents', (req, res) => {
     const customerId = 1; // Replace with dynamic customer ID
     const query = `
-        SELECT document_id, document_type 
+        SELECT 
+            document_id, 
+            document_type, 
+            document_number, 
+            upload_date, 
+            file_path, 
+            verification_status
         FROM KYC_Documents
         WHERE customer_id = ?
-        ORDER BY document_type ASC
+        ORDER BY upload_date DESC
     `;
 
     db.query(query, [customerId], (err, results) => {
