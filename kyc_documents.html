@@ -8,42 +8,42 @@
     <style>
         body {
             background: linear-gradient(135deg, #003366, #000000, #800057);
-            color: #ffffff; /* White text for readability */
-            min-height: 100vh; /* Ensure the body covers the full viewport height */
+            color: #ffffff;
+            min-height: 100vh; 
             display: flex;
             flex-direction: column;
         }
         .navbar {
-            background: linear-gradient(135deg, #003366, #000000, #800057); /* Same gradient as the page */
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow */
-            padding: 0.8rem 1rem; /* Reduced navbar size */
+            background: linear-gradient(135deg, #003366, #000000, #800057); 
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 0.8rem 1rem; 
         }
         .navbar-brand {
             font-weight: bold;
-            color: #ffffff !important; /* White text for branding */
-            text-decoration: none !important; /* Remove underline always */
+            color: #ffffff !important;
+            text-decoration: none !important;
         }
         .navbar-brand:hover {
-            text-decoration: none !important; /* Ensure no underline on hover */
+            text-decoration: none !important;
         }
         .nav-link {
-            text-decoration: none; /* No underline by default */
+            text-decoration: none;
         }
         .nav-link:hover {
-            text-decoration: underline !important; /* Add underline on hover */
+            text-decoration: underline !important; 
         }
         .card {
-            border: none; /* Remove card borders */
-            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15); /* Add stronger shadow to cards */
+            border: none;
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
         }
         footer {
-            background-color: #000000; /* Black footer */
-            color: #ffffff; /* White text for footer */
-            width: 100%; /* Ensure footer spans the full width */
-            margin-top: auto; /* Push footer to the bottom */
+            background-color: #000000; 
+            color: #ffffff; 
+            width: 100%; 
+            margin-top: auto; 
         }
         footer a {
-            color: maroon; /* Maroon links in footer */
+            color: maroon; 
             text-decoration: none;
         }
         footer a:hover {
@@ -356,7 +356,7 @@
                 }
 
                 alert(`Request ${status.toLowerCase()} successfully`);
-                loadVerificationRequests(); // Reload the verification requests
+                loadVerificationRequests(); 
             } catch (error) {
                 console.error('Error updating request status:', error);
                 alert('Failed to update request status. Please try again later.');
@@ -366,7 +366,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script src="js/audit-logger.js"></script>
 
-    <!-- Add this modal to kyc_documents.html -->
     <div class="modal fade" id="bankSelectionModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -389,8 +388,6 @@
             </div>
         </div>
     </div>
-
-    <!-- Add these JavaScript functions -->
     <script>
     let selectedDocumentId = null;
     let bankModal = null;

@@ -69,7 +69,6 @@ ADD COLUMN document_id INT,
 ADD COLUMN expiry_date TIMESTAMP,
 ADD FOREIGN KEY (document_id) REFERENCES KYC_Documents(document_id);
 
--- Update consent_status enum to include Pending
 ALTER TABLE Consent_Management 
 MODIFY COLUMN consent_status ENUM('Pending', 'Granted', 'Revoked') NOT NULL;
 ALTER TABLE consent_requests ADD COLUMN document_id INT;

@@ -8,83 +8,80 @@
     <style>
         body {
             background: linear-gradient(135deg, #003366, #000000, #800057);
-            color: #ffffff; /* White text for readability */
-            min-height: 100vh; /* Ensure the body covers the full viewport height */
+            color: #ffffff; 
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
         }
         .navbar {
-            background: linear-gradient(135deg, #003366, #000000, #800057); /* Same gradient as the page */
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow */
-            padding: 0.8rem 1rem; /* Reduced navbar size */
+            background: linear-gradient(135deg, #003366, #000000, #800057); 
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); 
+            padding: 0.8rem 1rem; 
         }
         .navbar-brand {
             font-weight: bold;
-            color: #ffffff !important; /* White text for branding */
-            text-decoration: none !important; /* Remove underline always */
+            color: #ffffff !important; 
+            text-decoration: none !important;
         }
         .navbar-brand:hover {
-            text-decoration: none !important; /* Ensure no underline on hover */
+            text-decoration: none !important;
         }
         .nav-link {
-            text-decoration: none; /* No underline by default */
+            text-decoration: none;
         }
         .nav-link:hover {
-            text-decoration: underline !important; /* Add underline on hover */
+            text-decoration: underline !important;
         }
         .btn-outline-primary {
-            color: maroon; /* Maroon text for buttons */
+            color: maroon;
             border-color: maroon;
-            background: transparent; /* Transparent background by default */
-            transition: all 0.3s ease-in-out; /* Smooth transition for hover effect */
+            background: transparent;
+            transition: all 0.3s ease-in-out; 
         }
 
-        /* Left button (blue on hover) */
         .col-md-4:nth-child(1) .btn-outline-primary:hover {
-            background-color: #003366; /* Blue background on hover */
-            color: #ffffff; /* White text on hover */
+            background-color: #003366; 
+            color: #ffffff; 
             border-color: #003366;
         }
 
-        /* Middle button (blackish on hover) */
         .col-md-4:nth-child(2) .btn-outline-primary:hover {
-            background-color: #000000; /* Blackish background on hover */
-            color: #ffffff; /* White text on hover */
+            background-color: #000000;
+            color: #ffffff; 
             border-color: #000000;
         }
 
-        /* Right button (pinkish on hover) */
         .col-md-4:nth-child(3) .btn-outline-primary:hover {
-            background-color: #800057; /* Pinkish background on hover */
-            color: #ffffff; /* White text on hover */
+            background-color: #800057; 
+            color: #ffffff; 
             border-color: #800057;
         }
 
         .card {
-            border: none; /* Remove card borders */
-            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15); /* Add stronger shadow to cards */
-            transition: transform 0.3s ease-in-out; /* Smooth hover effect */
+            border: none; 
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15); 
+            transition: transform 0.3s ease-in-out; 
         }
 
         .card:hover {
-            transform: translateY(-10px); /* Lift card more on hover */
+            transform: translateY(-10px); 
         }
 
         .card-title {
-            font-size: 1.5rem; /* Larger card titles */
+            font-size: 1.5rem; 
         }
 
         footer {
-            background-color: #000000; /* Black footer */
-            color: #ffffff; /* White text for footer */
-            width: 100%; /* Ensure footer spans the full width */
-            position: absolute; /* Fix footer to the bottom */
+            background-color: #000000;
+            color: #ffffff; 
+            width: 100%;
+            position: absolute;
             bottom: 0;
             left: 0;
         }
 
         footer a {
-            color: maroon; /* Maroon links in footer */
+            color: maroon;
             text-decoration: none;
         }
 

@@ -6,40 +6,33 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
-// Move these lines to the top, right after initializing the app
 const app = express();
 const PORT = 3000;
 
-// Serve static files from the uploads directory - must come before other middleware
+// FOR UPLOAD OF DOCUMENTS
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
-// Ensure uploads directory exists
 const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
 }
-
-// Middleware to parse JSON and form data
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Serve static files (HTML, CSS, JS) from the CENTRALIZED_KYC directory
 app.use(express.static(path.join(__dirname)));
 
-// Route to serve index.html
+// ROUTE FOR INDEX.HTML
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'Index.html'));
 });
 
 // MySQL Database Connection
 const db = mysql.createConnection({
-    host: 'localhost', // Replace with your MySQL host
-    user: 'root',      // Replace with your MySQL username
-    password: 'Password@123', // Replace with your MySQL password
-    database: 'Centralized_KYC' // Replace with your database name
+    host: 'localhost', 
+    user: 'root',     
+    password: 'Password@123', 
+    database: 'Centralized_KYC' 
 });
 
-// Connect to the database
 db.connect((err) => {
     if (err) {
         console.error('Error connecting to the database:', err.message);
@@ -50,11 +43,9 @@ db.connect((err) => {
 
 
 
-// API Endpoint to handle customer login
+// API FOR CUSTOMER LOGIN
 app.post('/api/login', (req, res) => {
     const { email, password } = req.body;
-
-    // Query to find the user by email
     const query = 'SELECT * FROM User_Authentication WHERE email = ? AND role = "Customer"';
     db.query(query, [email], async (err, results) => {
         if (err) {
@@ -69,8 +60,6 @@ app.post('/api/login', (req, res) => {
         }
 
         const user = results[0];
-
-        // Compare the provided password with the hashed password in the database
         const isPasswordValid = await bcrypt.compare(password, user.password_hash);
         if (!isPasswordValid) {
             res.status(401).json({ error: 'Invalid email or password' });
@@ -81,20 +70,15 @@ app.post('/api/login', (req, res) => {
     });
 });
 
-// API Endpoint to handle customer registration
+// API FOR CUSTOMER REGISTRATION
 app.post('/api/register', async (req, res) => {
     const { fullName, email, phone, password } = req.body;
-
-    // Hash the password
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
-
-    // Insert customer data into the Customers table
     const customerQuery = `
         INSERT INTO Customers (full_name, email, phone_number, date_of_birth, address)
         VALUES (?, ?, ?, '2000-01-01', 'Default Address')
     `;
-
     db.query(customerQuery, [fullName, email, phone], (err, customerResult) => {
         if (err) {
             console.error('Error inserting customer data:', err.message);
@@ -102,9 +86,9 @@ app.post('/api/register', async (req, res) => {
             return;
         }
 
-        const customerId = customerResult.insertId; // Get the inserted customer ID
+        const customerId = customerResult.insertId; 
 
-        // Insert user authentication data into the User_Authentication table
+        // INSERTION OF VALUES INTO USER AUTHENTICATION
         const authQuery = `
             INSERT INTO User_Authentication (customer_id, email, password_hash, role, account_status)
             VALUES (?, ?, ?, 'Customer', 'Active')
@@ -122,20 +106,15 @@ app.post('/api/register', async (req, res) => {
     });
 });
 
-// API Endpoint to handle bank registration
+// API FOR BANK REGISTRATION
 app.post('/api/bank/register', async (req, res) => {
     const { bankName, branch, contactEmail, password } = req.body;
-
-    // Hash the password
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
-
-    // Insert bank data into the Banks table
     const bankQuery = `
         INSERT INTO Banks (bank_name, branch, contact_email)
         VALUES (?, ?, ?)
     `;
-
     db.query(bankQuery, [bankName, branch, contactEmail], (err, bankResult) => {
         if (err) {
             console.error('Error inserting bank data:', err.message);
@@ -143,31 +122,27 @@ app.post('/api/bank/register', async (req, res) => {
             return;
         }
 
-        const bankId = bankResult.insertId; // Get the inserted bank ID
+        const bankId = bankResult.insertId;
 
-        // Insert user authentication data into the User_Authentication table
+        // INSERTION OF VALUES INTO USER AUTHENTICATION
         const authQuery = `
             INSERT INTO User_Authentication (bank_id, email, password_hash, role, account_status)
             VALUES (?, ?, ?, 'Bank_Official', 'Active')
         `;
-
         db.query(authQuery, [bankId, contactEmail, hashedPassword], (err) => {
             if (err) {
                 console.error('Error inserting user authentication data:', err.message);
                 res.status(500).json({ error: 'Failed to register user authentication' });
                 return;
             }
-
             res.json({ message: 'Bank registered successfully!' });
         });
     });
 });
 
-// API Endpoint to handle bank login
+// API FOR BANK LOGIN
 app.post('/api/bank/login', (req, res) => {
     const { email, password } = req.body;
-
-    // Query to find the bank user by email
     const query = 'SELECT * FROM User_Authentication WHERE email = ? AND role = "Bank_Official"';
     db.query(query, [email], async (err, results) => {
         if (err) {
@@ -183,7 +158,6 @@ app.post('/api/bank/login', (req, res) => {
 
         const user = results[0];
 
-        // Compare the provided password with the hashed password in the database
         const isPasswordValid = await bcrypt.compare(password, user.password_hash);
         if (!isPasswordValid) {
             res.status(401).json({ error: 'Invalid email or password' });
@@ -194,11 +168,9 @@ app.post('/api/bank/login', (req, res) => {
     });
 });
 
-// API Endpoint to handle admin login
+// API FOR ADMIN LOGIN
 app.post('/api/admin/login', (req, res) => {
     const { email, password } = req.body;
-
-    // Query to find the admin user by email
     const query = 'SELECT * FROM User_Authentication WHERE email = ? AND role = "Admin"';
     db.query(query, [email], async (err, results) => {
         if (err) {
@@ -213,8 +185,6 @@ app.post('/api/admin/login', (req, res) => {
         }
 
         const user = results[0];
-
-        // Compare the provided password with the hashed password in the database
         const isPasswordValid = await bcrypt.compare(password, user.password_hash);
         if (!isPasswordValid) {
             res.status(401).json({ error: 'Invalid email or password' });
@@ -225,11 +195,9 @@ app.post('/api/admin/login', (req, res) => {
     });
 });
 
-// API Endpoint to register a new admin
+// API FOR ADMIN REGISTRATION
 app.post('/api/admin/register', async (req, res) => {
     const { email, password } = req.body;
-
-    // Check if an admin already exists
     const checkQuery = 'SELECT * FROM User_Authentication WHERE role = "Admin"';
     db.query(checkQuery, (err, results) => {
         if (err) {
@@ -242,8 +210,6 @@ app.post('/api/admin/register', async (req, res) => {
             res.status(400).json({ error: 'An admin already exists' });
             return;
         }
-
-        // Hash the password
         const saltRounds = 10;
         bcrypt.hash(password, saltRounds, (err, hashedPassword) => {
             if (err) {
@@ -252,7 +218,7 @@ app.post('/api/admin/register', async (req, res) => {
                 return;
             }
 
-            // Insert the new admin into the User_Authentication table
+ //  INSERTION OF VALUES INTO USER AUTHENTICATION
             const insertQuery = `
                 INSERT INTO User_Authentication (email, password_hash, role, account_status)
                 VALUES (?, ?, 'Admin', 'Active')
@@ -270,7 +236,7 @@ app.post('/api/admin/register', async (req, res) => {
     });
 });
 
-// API Endpoint to fetch audit logs
+// API TO FETCH ADMIN LOG 
 app.get('/api/audit-logs', (req, res) => {
     const query = `
         SELECT 
@@ -309,7 +275,7 @@ app.get('/api/audit-logs', (req, res) => {
     });
 });
 
-// Add with your other endpoints
+// API FOR VERIFICATION REQUESTS
 app.get('/api/verification-requests', (req, res) => {
     const query = `
         SELECT 
@@ -336,7 +302,7 @@ app.get('/api/verification-requests', (req, res) => {
     });
 });
 
-// API Endpoint to fetch customer data
+// API FOR FETCHING CUSTOMER DATA
 app.get('/api/customers', async (req, res) => {
     try {
         const [results] = await db.promise().query(`
@@ -359,7 +325,7 @@ app.get('/api/customers', async (req, res) => {
     }
 });
 
-// Keep only this simplified version of the banks endpoint
+//API FOR BANK INFORMATION
 app.get('/api/banks', (req, res) => {
     const query = `
         SELECT 
@@ -381,9 +347,9 @@ app.get('/api/banks', (req, res) => {
     });
 });
 
-// API Endpoint to fetch KYC documents
+// API FOR KYC DOCUMENTS
 app.get('/api/kyc-documents', (req, res) => {
-    const customerId = 1; // Replace with dynamic customer ID
+    const customerId = 1; 
     const query = `
         SELECT 
             document_id, 
@@ -406,7 +372,7 @@ app.get('/api/kyc-documents', (req, res) => {
     });
 });
 
-// API Endpoint to fetch verification requests
+// API TO FETCH VERIFICATION REQUESTS
 app.get('/api/verification-requests', (req, res) => {
     const query = `
         SELECT 
@@ -433,7 +399,7 @@ app.get('/api/verification-requests', (req, res) => {
     });
 });
 
-// API Endpoint to fetch approval status data
+// API TO FETCH APPROVAL STATUS
 app.get('/api/approval-status', (req, res) => {
     const query = `
         SELECT 
@@ -460,21 +426,18 @@ app.get('/api/approval-status', (req, res) => {
     });
 });
 
-// Update the verification request endpoint
+
 app.post('/api/verification-requests', async (req, res) => {
     const { documentId, bankId } = req.body;
-    const customerId = 1; // Replace with actual customer ID from session
+    const customerId = 1; 
 
     try {
         await db.promise().beginTransaction();
-
-        // Create verification request
         const [result] = await db.promise().query(
             'INSERT INTO Verification_Requests (customer_id, bank_id, document_id, request_date) VALUES (?, ?, ?, NOW())',
             [customerId, bankId, documentId]
         );
 
-        // Create initial approval status
         await db.promise().query(
             'INSERT INTO Approval_Status (request_id, status) VALUES (?, "Pending")',
             [result.insertId]
@@ -492,12 +455,10 @@ app.post('/api/verification-requests', async (req, res) => {
         res.status(500).json({ error: 'Failed to create verification request' });
     }
 });
-
-// Add this endpoint after your existing endpoints
+// API FOR BANK DELECTION
 app.delete('/api/banks/:id', (req, res) => {
     const { id } = req.params;
 
-    // First check if the bank has any associated records
     const checkQuery = `
         SELECT 
             (SELECT COUNT(*) FROM Verification_Requests WHERE bank_id = ?) as verification_count,
@@ -518,8 +479,6 @@ app.delete('/api/banks/:id', (req, res) => {
             });
             return;
         }
-
-        // If no associations exist, proceed with deletion
         const deleteAuthQuery = 'DELETE FROM User_Authentication WHERE bank_id = ?';
         db.query(deleteAuthQuery, [id], (err) => {
             if (err) {
@@ -540,8 +499,6 @@ app.delete('/api/banks/:id', (req, res) => {
                     res.status(404).json({ error: 'Bank not found' });
                     return;
                 }
-
-                // Add to audit log
                 const auditQuery = `
                     INSERT INTO Audit_Logs (action, user_id, role, ip_address)
                     VALUES (?, 'ADMIN', 'Admin', ?)
@@ -560,15 +517,12 @@ app.delete('/api/banks/:id', (req, res) => {
         });
     });
 });
-
-// Update the document deletion endpoint
+// API FOR KYC DOCUMENTS CRUD
 app.delete('/api/kyc-documents/:id', async (req, res) => {
     const { id } = req.params;
 
     try {
         await db.promise().beginTransaction();
-
-        // First get document details
         const [doc] = await db.promise().query(
             'SELECT file_path, customer_id FROM KYC_Documents WHERE document_id = ?',
             [id]
@@ -577,8 +531,6 @@ app.delete('/api/kyc-documents/:id', async (req, res) => {
         if (doc.length === 0) {
             return res.status(404).json({ error: 'Document not found' });
         }
-
-        // Delete verification requests and approval status
         await db.promise().query(
             `DELETE FROM Approval_Status 
              WHERE request_id IN (
@@ -591,20 +543,14 @@ app.delete('/api/kyc-documents/:id', async (req, res) => {
             'DELETE FROM Verification_Requests WHERE document_id = ?',
             [id]
         );
-
-        // Delete consent requests
         await db.promise().query(
             'DELETE FROM consent_requests WHERE document_id = ?',
             [id]
         );
-
-        // Delete document record
         await db.promise().query(
             'DELETE FROM KYC_Documents WHERE document_id = ?',
             [id]
         );
-
-        // Delete physical file
         const filePath = path.join(uploadDir, doc[0].file_path);
         fs.unlink(filePath, (err) => {
             if (err) console.error('Error deleting file:', err);
@@ -619,8 +565,6 @@ app.delete('/api/kyc-documents/:id', async (req, res) => {
         res.status(500).json({ error: 'Failed to delete document' });
     }
 });
-
-// Helper function to check admin access
 async function checkAdminAccess(userId) {
     if (!userId) return false;
 
@@ -635,8 +579,6 @@ async function checkAdminAccess(userId) {
         return false;
     }
 }
-
-// Add endpoint to request KYC access
 app.post('/api/consent-requests', (req, res) => {
     const { customerId, documentId, bankId } = req.body;
 
@@ -659,7 +601,6 @@ app.post('/api/consent-requests', (req, res) => {
     });
 });
 
-// Configure multer
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, 'uploads/')
@@ -672,7 +613,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({
     storage: storage,
-    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+    limits: { fileSize: 5 * 1024 * 1024 },
     fileFilter: (req, file, cb) => {
         const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png'];
         if (!allowedTypes.includes(file.mimetype)) {
@@ -681,10 +622,8 @@ const upload = multer({
         cb(null, true);
     }
 });
-
-// Update the document upload endpoint
 app.post('/api/kyc-documents', upload.single('documentFile'), async (req, res) => {
-    const customerId = 1; // Replace with actual customer ID from session
+    const customerId = 1; 
     const { documentType, documentNumber } = req.body;
 
     if (!req.file) {
@@ -693,14 +632,10 @@ app.post('/api/kyc-documents', upload.single('documentFile'), async (req, res) =
 
     try {
         await db.promise().beginTransaction();
-
-        // Check if document type already exists for this customer
         const [existingDocs] = await db.promise().query(
             'SELECT document_id, file_path FROM KYC_Documents WHERE customer_id = ? AND document_type = ?',
             [customerId, documentType]
         );
-
-        // If document exists, delete old file and record
         if (existingDocs.length > 0) {
             const oldFilePath = path.join(uploadDir, existingDocs[0].file_path);
             if (fs.existsSync(oldFilePath)) {
@@ -712,8 +647,6 @@ app.post('/api/kyc-documents', upload.single('documentFile'), async (req, res) =
                 [existingDocs[0].document_id]
             );
         }
-
-        // Insert new document
         const insertQuery = `
             INSERT INTO KYC_Documents (
                 customer_id, 
@@ -736,7 +669,6 @@ app.post('/api/kyc-documents', upload.single('documentFile'), async (req, res) =
 
     } catch (error) {
         await db.promise().rollback();
-        // Delete uploaded file if database operation fails
         const filePath = path.join(uploadDir, req.file.filename);
         if (fs.existsSync(filePath)) {
             fs.unlinkSync(filePath);
@@ -745,8 +677,6 @@ app.post('/api/kyc-documents', upload.single('documentFile'), async (req, res) =
         res.status(500).json({ error: 'Failed to upload document' });
     }
 });
-
-// Add this function to load banks from database
 async function loadBanks() {
     try {
         const response = await fetch('/api/banks/available');
@@ -768,8 +698,6 @@ async function loadBanks() {
         alert('Failed to load available banks');
     }
 }
-
-// Update the verification request endpoint in server.js
 app.get('/api/banks/available', (req, res) => {
     const query = `
         SELECT b.bank_id, b.bank_name, b.branch
@@ -789,10 +717,8 @@ app.get('/api/banks/available', (req, res) => {
     });
 });
 
-// Update the approved-documents endpoint
 app.get('/api/approved-documents', async (req, res) => {
     try {
-        // Ensure proper headers are set
         res.setHeader('Content-Type', 'application/json');
 
         const [results] = await db.promise().query(`
@@ -807,29 +733,21 @@ app.get('/api/approved-documents', async (req, res) => {
             WHERE kd.verification_status = 'Approved'
             ORDER BY c.full_name, kd.document_type
         `);
-
-        // Send JSON response
         res.status(200).json(results || []);
     } catch (error) {
         console.error('Error fetching approved documents:', error);
-
-        // Return a JSON error response
         res.status(500).json({ error: 'Failed to fetch approved documents' });
     }
 });
 
-// Start the server
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });
-
-// Add this middleware at the end of all routes in server.js
 app.use((err, req, res, next) => {
     console.error('Unhandled Error:', err);
     res.status(500).json({ error: 'Internal Server Error', message: err.message });
 });
 
-// Update consent request status (approve/reject)
 app.put('/api/consent-requests/:requestId', async (req, res) => {
     const { requestId } = req.params;
     const { status } = req.body;
@@ -855,7 +773,7 @@ app.put('/api/consent-requests/:requestId', async (req, res) => {
     }
 });
 
-// Get all consent requests for a customer (for consent_management.html)
+// CONSENT REQUEST API
 app.get('/api/consent-requests/customer/:customerId', async (req, res) => {
     const { customerId } = req.params;
 
@@ -931,7 +849,6 @@ function viewDocument(filePath) {
     window.open(`/uploads/${filePath}`, '_blank');
 }
 
-// Update verification request status (approve/reject)
 app.put('/api/verification-requests/:requestId/status', async (req, res) => {
     const { requestId } = req.params;
     const { status } = req.body;
