@@ -305,20 +305,34 @@ app.get('/api/verification-requests', (req, res) => {
 // API FOR FETCHING CUSTOMER DATA
 app.get('/api/customers', async (req, res) => {
     try {
-        const [results] = await db.promise().query(`
+        const [customers] = await db.promise().query(`
             SELECT 
                 c.customer_id,
                 c.full_name,
                 c.email,
-                c.phone_number,
-                COUNT(kd.document_id) AS document_count
+                c.phone_number
             FROM Customers c
-            LEFT JOIN KYC_Documents kd ON c.customer_id = kd.customer_id
-            GROUP BY c.customer_id
             ORDER BY c.full_name ASC
         `);
 
-        res.json(results);
+        const [documents] = await db.promise().query(`
+            SELECT 
+                kd.customer_id,
+                kd.document_id,
+                kd.document_type,
+                kd.verification_status,
+                vr.request_id
+            FROM KYC_Documents kd
+            LEFT JOIN Verification_Requests vr ON kd.document_id = vr.document_id
+            LEFT JOIN Approval_Status a ON vr.request_id = a.request_id
+        `);
+
+        const customerData = customers.map(customer => ({
+            ...customer,
+            documents: documents.filter(doc => doc.customer_id === customer.customer_id)
+        }));
+
+        res.json(customerData);
     } catch (error) {
         console.error('Error fetching customers:', error);
         res.status(500).json({ error: 'Failed to fetch customers' });
@@ -349,18 +363,25 @@ app.get('/api/banks', (req, res) => {
 
 // API FOR KYC DOCUMENTS
 app.get('/api/kyc-documents', (req, res) => {
-    const customerId = 1; 
+    const customerId = 1; // Replace with dynamic customer ID
     const query = `
         SELECT 
-            document_id, 
-            document_type, 
-            document_number, 
-            upload_date, 
-            file_path, 
-            verification_status
-        FROM KYC_Documents
-        WHERE customer_id = ?
-        ORDER BY upload_date DESC
+            kd.document_id, 
+            kd.document_type, 
+            kd.document_number, 
+            kd.upload_date, 
+            kd.file_path, 
+            COALESCE(vr.verification_status, 'Not Applied') AS verification_status
+        FROM KYC_Documents kd
+        LEFT JOIN (
+            SELECT 
+                vr.document_id, 
+                a.status AS verification_status
+            FROM Verification_Requests vr
+            LEFT JOIN Approval_Status a ON vr.request_id = a.request_id
+        ) vr ON kd.document_id = vr.document_id
+        WHERE kd.customer_id = ?
+        ORDER BY kd.upload_date DESC
     `;
 
     db.query(query, [customerId], (err, results) => {
@@ -428,31 +449,46 @@ app.get('/api/approval-status', (req, res) => {
 
 
 app.post('/api/verification-requests', async (req, res) => {
-    const { documentId, bankId } = req.body;
-    const customerId = 1; 
+    const { documentId } = req.body;
+    const customerId = 1; // Replace with dynamic customer ID
 
     try {
         await db.promise().beginTransaction();
-        const [result] = await db.promise().query(
-            'INSERT INTO Verification_Requests (customer_id, bank_id, document_id, request_date) VALUES (?, ?, ?, NOW())',
-            [customerId, bankId, documentId]
+
+        // Check if a verification request already exists
+        const [existingRequest] = await db.promise().query(
+            'SELECT * FROM Verification_Requests WHERE document_id = ? AND customer_id = ?',
+            [documentId, customerId]
         );
 
+        if (existingRequest.length > 0) {
+            return res.status(400).json({ error: 'Verification request already exists' });
+        }
+
+        // Update document status to Pending
+        await db.promise().query(
+            'UPDATE KYC_Documents SET verification_status = "Pending" WHERE document_id = ?',
+            [documentId]
+        );
+
+        // Insert a new verification request
+        const [result] = await db.promise().query(
+            'INSERT INTO Verification_Requests (customer_id, document_id, request_date) VALUES (?, ?, NOW())',
+            [customerId, documentId]
+        );
+
+        // Insert a pending approval status for the request
         await db.promise().query(
             'INSERT INTO Approval_Status (request_id, status) VALUES (?, "Pending")',
             [result.insertId]
         );
 
         await db.promise().commit();
-        res.json({ 
-            message: 'Verification request created successfully',
-            requestId: result.insertId
-        });
-
+        res.json({ message: 'Verification request applied successfully' });
     } catch (error) {
         await db.promise().rollback();
-        console.error('Error creating verification request:', error);
-        res.status(500).json({ error: 'Failed to create verification request' });
+        console.error('Error applying for verification:', error);
+        res.status(500).json({ error: 'Failed to apply for verification' });
     }
 });
 // API FOR BANK DELECTION
@@ -853,25 +889,63 @@ app.put('/api/verification-requests/:requestId/status', async (req, res) => {
     const { requestId } = req.params;
     const { status } = req.body;
 
+    if (!requestId || requestId === 'null') {
+        return res.status(400).json({ error: 'Invalid request ID' });
+    }
+
     if (!['Approved', 'Rejected'].includes(status)) {
         return res.status(400).json({ error: 'Invalid status' });
     }
 
     try {
-        const [result] = await db.promise().query(
+        // Get document_id for this request
+        const [[request]] = await db.promise().query(
+            'SELECT document_id FROM Verification_Requests WHERE request_id = ?',
+            [requestId]
+        );
+        if (!request) return res.status(404).json({ error: 'Verification request not found' });
+
+        // Update Approval_Status
+        await db.promise().query(
             `UPDATE Approval_Status 
-             SET status = ?, verified_by = 'Bank Official', verification_date = NOW()
+             SET status = ?, verified_by = 'Admin', verification_date = NOW()
              WHERE request_id = ?`,
             [status, requestId]
         );
 
-        if (result.affectedRows === 0) {
-            return res.status(404).json({ error: 'Verification request not found' });
-        }
+        // Update KYC_Documents status
+        await db.promise().query(
+            'UPDATE KYC_Documents SET verification_status = ? WHERE document_id = ?',
+            [status, request.document_id]
+        );
 
         res.json({ message: `Verification request ${status.toLowerCase()} successfully` });
     } catch (error) {
         console.error('Error updating verification request status:', error);
         res.status(500).json({ error: 'Failed to update verification request status' });
     }
+});
+
+app.get('/api/all-kyc-documents', (req, res) => {
+    const customerId = 1; // Replace with dynamic customer ID
+    const query = `
+        SELECT 
+            document_id, 
+            document_type, 
+            document_number, 
+            upload_date, 
+            file_path, 
+            verification_status
+        FROM KYC_Documents
+        WHERE customer_id = ?
+        ORDER BY upload_date DESC
+    `;
+
+    db.query(query, [customerId], (err, results) => {
+        if (err) {
+            console.error('Error fetching all KYC documents:', err);
+            return res.status(500).json({ error: 'Failed to fetch all KYC documents' });
+        }
+        res.json(results);
+    });
 });
