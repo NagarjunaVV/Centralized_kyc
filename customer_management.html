@@ -120,7 +120,6 @@
                                 <th>Email</th>
                                 <th>Phone</th>
                                 <th>Documents</th>
-                                <th>Status</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -170,7 +169,7 @@
             if (customers.length === 0) {
                 customerList.innerHTML = `
                     <tr>
-                        <td colspan="7" class="text-center">No customers found</td>
+                        <td colspan="6" class="text-center">No customers found</td>
                     </tr>
                 `;
                 return;
@@ -184,11 +183,6 @@
                         <td>${customer.email}</td>
                         <td>${customer.phone_number}</td>
                         <td>${customer.document_count || 0}</td>
-                        <td>
-                            <span class="badge ${getBadgeClass(customer.status)}">
-                                ${customer.status || 'No Documents'}
-                            </span>
-                        </td>
                         <td>
                             <div class="btn-group">
                                 <button class="btn btn-sm btn-secondary" onclick="showImplementedLater()">

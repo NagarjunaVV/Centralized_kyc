@@ -345,14 +345,7 @@ app.get('/api/customers', async (req, res) => {
                 c.full_name,
                 c.email,
                 c.phone_number,
-                COUNT(kd.document_id) AS document_count,
-                (
-                    SELECT verification_status 
-                    FROM KYC_Documents 
-                    WHERE customer_id = c.customer_id 
-                    ORDER BY upload_date DESC 
-                    LIMIT 1
-                ) AS latest_status
+                COUNT(kd.document_id) AS document_count
             FROM Customers c
             LEFT JOIN KYC_Documents kd ON c.customer_id = kd.customer_id
             GROUP BY c.customer_id
