@@ -276,24 +276,25 @@ app.get('/api/audit-logs', (req, res) => {
 app.get('/api/verification-requests', (req, res) => {
     const query = `
         SELECT 
-            vr.request_id,
-            c.full_name AS customer_name,
-            kd.document_type,
-            vr.request_date,
-            COALESCE(a.status, 'Pending') as status
+            vr.request_id, 
+            c.full_name AS customer_name, 
+            kyc.document_type, 
+            vr.request_date, 
+            COALESCE(a.status, 'Pending') AS status,
+            a.verified_by,
+            a.verification_date
         FROM Verification_Requests vr
         JOIN Customers c ON vr.customer_id = c.customer_id
-        JOIN KYC_Documents kd ON vr.customer_id = kd.customer_id
+        JOIN KYC_Documents kyc ON vr.document_id = kyc.document_id
         LEFT JOIN Approval_Status a ON vr.request_id = a.request_id
-        ORDER BY 
-            CASE WHEN a.status = 'Pending' OR a.status IS NULL THEN 0 ELSE 1 END,
-            vr.request_date DESC
+        ORDER BY vr.request_date DESC
     `;
 
     db.query(query, (err, results) => {
         if (err) {
-            console.error('Error fetching verification requests:', err);
-            return res.status(500).json({ error: 'Failed to fetch verification requests' });
+            console.error('Error fetching verification requests:', err.message);
+            res.status(500).json({ error: 'Failed to fetch verification requests' });
+            return;
         }
         res.json(results);
     });
@@ -422,14 +423,12 @@ app.get('/api/approval-status', (req, res) => {
     const query = `
         SELECT 
             a.request_id, 
-            b.bank_name, 
             vr.request_date, 
             a.status, 
             a.verified_by, 
             a.verification_date
         FROM Approval_Status a
         JOIN Verification_Requests vr ON a.request_id = vr.request_id
-        JOIN Banks b ON vr.bank_id = b.bank_id
         ORDER BY a.verification_date DESC
     `;
 

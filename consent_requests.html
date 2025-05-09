@@ -79,7 +79,7 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link text-white" href="verification_request.html">Verification Requests</a>
+                        <a class="nav-link text-white" href="verification_request.html">KYC Verification Process</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link text-white" href="#" onclick="logout()">Logout</a>
@@ -122,7 +122,7 @@
 
         <!-- Add Request Access Button -->
         <div class="text-end mb-3">
-            <button class="btn btn-primary" onclick="showNewRequestModal()">
+            <button class="btn btn-primary" onclick="featureComingSoon()">
                 <i class="bi bi-plus-circle"></i> New Access Request
             </button>
         </div>
@@ -210,6 +210,10 @@
             sessionStorage.clear();
             localStorage.clear();
             window.location.replace("bank_login.html");
+        }
+
+        function featureComingSoon() {
+            alert('This feature will be implemented later');
         }
 
         document.addEventListener('DOMContentLoaded', loadConsentRequests);

@@ -153,12 +153,10 @@
                         <thead>
                             <tr>
                                 <th>Request ID</th>
-                                <th>Bank</th>
-                                <th>Document Type</th>
+                                <th>Status</th>
                                 <th>Submission Date</th>
                                 <th>Verified By</th>
                                 <th>Verification Date</th>
-                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody id="approval-status-list">
@@ -219,7 +217,7 @@
             if (statuses.length === 0) {
                 statusList.innerHTML = `
                     <tr>
-                        <td colspan="7" class="text-center">No approval status records found</td>
+                        <td colspan="5" class="text-center">No approval status records found</td>
                     </tr>
                 `;
                 return;
@@ -229,20 +227,14 @@
                 const row = `
                     <tr>
                         <td>${status.request_id}</td>
-                        <td>${status.bank_name}</td>
-                        <td>${new Date(status.request_date).toLocaleDateString()}</td>
                         <td>
                             <span class="badge ${getBadgeClass(status.status)}">
                                 ${status.status}
                             </span>
                         </td>
+                        <td>${new Date(status.request_date).toLocaleDateString()}</td>
                         <td>${status.verified_by || '-'}</td>
                         <td>${status.verification_date ? new Date(status.verification_date).toLocaleDateString() : '-'}</td>
-                        <td>
-                            <button class="btn btn-sm btn-info" onclick="viewDetails(${status.request_id})">
-                                <i class="bi bi-info-circle"></i> Details
-                            </button>
-                        </td>
                     </tr>
                 `;
                 statusList.innerHTML += row;
@@ -255,10 +247,6 @@
                 case 'Rejected': return 'bg-danger';
                 default: return 'bg-warning text-dark';
             }
-        }
-
-        function viewDetails(requestId) {
-            alert('This feature will be implemented later');
         }
 
         // Load approval status when the page loads

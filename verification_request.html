@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verification Requests - Centralized KYC</title>
+    <title>KYC Verification Process - Centralized KYC</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.1/font/bootstrap-icons.min.css" rel="stylesheet">
     <style>
@@ -81,16 +81,13 @@
 
     <div class="container my-5">
         <div class="text-center mb-5">
-            <h1 class="display-4 fw-bold">Verification Requests</h1>
-            <p class="lead">Review and process KYC verification requests from customers</p>
+            <h1 class="display-4 fw-bold">KYC Verification Process</h1>
+            <p class="lead">View the status and details of all KYC verification requests submitted by customers.</p>
         </div>
 
         <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">Pending Requests</h5>
-                <button class="btn btn-outline-primary" onclick="refreshRequests()">
-                    <i class="bi bi-arrow-clockwise"></i> Refresh
-                </button>
+            <div class="card-header">
+                <h5 class="mb-0">KYC Verification Records</h5>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
@@ -104,11 +101,10 @@
                                 <th>Status</th>
                                 <th>Verified By</th>
                                 <th>Verification Date</th>
-                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody id="verification-request-list">
-
+                            <!-- Data will be loaded here -->
                         </tbody>
                     </table>
                 </div>
@@ -140,7 +136,7 @@
                 if (requests.length === 0) {
                     requestList.innerHTML = `
                         <tr>
-                            <td colspan="8" class="text-center">No pending verification requests</td>
+                            <td colspan="7" class="text-center">No KYC verification records found</td>
                         </tr>
                     `;
                     return;
@@ -150,9 +146,9 @@
                     const row = `
                         <tr>
                             <td>${request.request_id}</td>
-                            <td>${request.customer_name}</td>
-                            <td>${request.document_type}</td>
-                            <td>${new Date(request.request_date).toLocaleDateString()}</td>
+                            <td>${request.customer_name || '-'}</td>
+                            <td>${request.document_type || '-'}</td>
+                            <td>${request.request_date ? new Date(request.request_date).toLocaleDateString() : '-'}</td>
                             <td>
                                 <span class="badge ${getStatusBadgeClass(request.status)}">
                                     ${request.status || 'Pending'}
@@ -160,19 +156,6 @@
                             </td>
                             <td>${request.verified_by || '-'}</td>
                             <td>${request.verification_date ? new Date(request.verification_date).toLocaleDateString() : '-'}</td>
-                            <td>
-                                ${request.status === 'Pending' ? `
-                                    <div class="btn-group">
-                                        <button class="btn btn-sm btn-success" onclick="updateStatus(${request.request_id}, 'Approved')">
-                                            <i class="bi bi-check-circle"></i> Approve
-                                        </button>
-                                        <button class="btn btn-sm btn-danger" onclick="updateStatus(${request.request_id}, 'Rejected')">
-                                            <i class="bi bi-x-circle"></i> Reject
-                                        </button>
-                                    </div>
-                                ` : '-'}
-
-                            </td>
                         </tr>
                     `;
                     requestList.innerHTML += row;
@@ -189,36 +172,6 @@
                 case 'Rejected': return 'bg-danger';
                 default: return 'bg-warning text-dark';
             }
-        }
-
-        async function updateStatus(requestId, status) {
-            if (!confirm(`Are you sure you want to ${status.toLowerCase()} this verification request?`)) {
-                return;
-            }
-
-            try {
-                const response = await fetch(`/api/verification-requests/${requestId}/status`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ status })
-                });
-
-                if (!response.ok) {
-                    throw new Error('Failed to update request status');
-                }
-
-                alert(`Request ${status.toLowerCase()} successfully`);
-                loadVerificationRequests();
-            } catch (error) {
-                console.error('Error updating request status:', error);
-                alert('Failed to update request status. Please try again later.');
-            }
-        }
-
-        function refreshRequests() {
-            loadVerificationRequests();
         }
 
         function logout() {

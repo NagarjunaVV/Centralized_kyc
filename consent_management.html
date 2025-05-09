@@ -114,7 +114,7 @@
 
         <!-- Add New Access Request Button -->
 <div class="text-end mb-3">
-    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newAccessRequestModal">
+    <button class="btn btn-primary" onclick="featureComingSoon()">
         <i class="bi bi-plus-circle"></i> New Access Request
     </button>
 </div>
@@ -293,6 +293,10 @@
 
     function logout() {
         window.location.replace("customer_login.html");
+    }
+
+    function featureComingSoon() {
+        alert('This feature will be implemented in future.');
     }
 
     document.addEventListener('DOMContentLoaded', loadConsents);
