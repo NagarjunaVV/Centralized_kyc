@@ -272,6 +272,52 @@ app.get('/api/audit-logs', (req, res) => {
     });
 });
 
+// Fetch audit logs by action type
+app.get('/api/audit-logs/action/:action', (req, res) => {
+    const { action } = req.params;
+    const query = `
+        SELECT 
+            log_id, user_id, role, action, ip_address, timestamp
+        FROM Audit_Logs
+        WHERE action = ?
+        ORDER BY timestamp DESC
+        LIMIT 100
+    `;
+    db.query(query, [action], (err, results) => {
+        if (err) {
+            console.error('Error fetching audit logs:', err.message);
+            res.status(500).json({ error: 'Failed to fetch audit logs' });
+            return;
+        }
+        res.json(results);
+    });
+});
+
+// Fetch audit logs for multiple actions
+app.get('/api/audit-logs/actions', (req, res) => {
+    const actions = req.query.actions ? req.query.actions.split(',') : [];
+    if (actions.length === 0) {
+        return res.status(400).json({ error: 'No actions specified' });
+    }
+    const placeholders = actions.map(() => '?').join(',');
+    const query = `
+        SELECT 
+            log_id, user_id, role, action, ip_address, timestamp
+        FROM Audit_Logs
+        WHERE action IN (${placeholders})
+        ORDER BY timestamp DESC
+        LIMIT 100
+    `;
+    db.query(query, actions, (err, results) => {
+        if (err) {
+            console.error('Error fetching audit logs:', err.message);
+            res.status(500).json({ error: 'Failed to fetch audit logs' });
+            return;
+        }
+        res.json(results);
+    });
+});
+
 // API FOR VERIFICATION REQUESTS
 app.get('/api/verification-requests', (req, res) => {
     const query = `
@@ -965,3 +1011,25 @@ app.get('/api/all-kyc-documents', (req, res) => {
         res.json(results);
     });
 });
+async function loadAuditLogs() {
+    try {
+        const response = await fetch('/api/audit-logs');
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to fetch audit logs');
+        }
+        const logs = await response.json();
+        updateLogsTable(logs);
+    } catch (error) {
+        console.error('Error in loadAuditLogs:', error);
+        const errorMessage = document.getElementById('audit-log-list');
+        errorMessage.innerHTML = `
+            <tr>
+                <td colspan="6" class="text-center text-danger">
+                    <i class="bi bi-exclamation-triangle"></i> 
+                    Error loading audit logs: ${error.message}
+                </td>
+            </tr>
+        `;
+    }
+}

@@ -130,6 +130,7 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script>
+        // Fetch and display only relevant audit logs
         async function loadAuditLogs() {
             try {
                 const response = await fetch('/api/audit-logs');
@@ -201,7 +202,6 @@
                 refreshButton.disabled = true;
                 refreshButton.innerHTML = '<i class="bi bi-arrow-clockwise"></i> Refreshing...';
             }
-            
             loadAuditLogs().finally(() => {
                 if (refreshButton) {
                     refreshButton.disabled = false;
