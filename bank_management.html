@@ -120,7 +120,7 @@
                                 <th>Branch</th>
                                 <th>Email</th>
                                 <th>Registered At</th>
-                                <th>Actions</th>
+                                <!-- Removed Actions column -->
                             </tr>
                         </thead>
                         <tbody id="bank-list">
@@ -169,7 +169,7 @@
             if (banks.length === 0) {
                 bankList.innerHTML = `
                     <tr>
-                        <td colspan="6" class="text-center">No banks registered</td>
+                        <td colspan="5" class="text-center">No banks registered</td>
                     </tr>
                 `;
                 return;
@@ -183,24 +183,10 @@
                         <td>${bank.branch || 'N/A'}</td>
                         <td>${bank.contact_email || 'N/A'}</td>
                         <td>${bank.registered_at ? new Date(bank.registered_at).toLocaleDateString() : 'N/A'}</td>
-                        <td>
-                            <div class="btn-group">
-                                <button class="btn btn-sm btn-secondary" onclick="showImplementedLater()">
-                                    <i class="bi bi-pencil"></i> Edit
-                                </button>
-                                <button class="btn btn-sm btn-secondary" onclick="showImplementedLater()">
-                                    <i class="bi bi-trash"></i> Remove
-                                </button>
-                            </div>
-                        </td>
                     </tr>
                 `;
                 bankList.innerHTML += row;
             });
-        }
-
-        function showImplementedLater() {
-            alert('This feature will be implemented later');
         }
 
         function logout() {
