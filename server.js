@@ -902,11 +902,14 @@ app.get('/api/consent-requests', async (req, res) => {
         const [results] = await db.promise().query(`
             SELECT 
                 cr.request_id,
+                cr.bank_id,
+                b.bank_name,
                 c.full_name AS customer_name,
                 kd.document_type,
                 cr.request_date,
                 cr.status AS consent_status
             FROM consent_requests cr
+            LEFT JOIN Banks b ON cr.bank_id = b.bank_id
             LEFT JOIN Customers c ON cr.customer_id = c.customer_id
             LEFT JOIN KYC_Documents kd ON cr.document_id = kd.document_id
             ORDER BY cr.request_date DESC
@@ -991,7 +994,7 @@ app.put('/api/verification-requests/:requestId/status', async (req, res) => {
 });
 
 app.get('/api/all-kyc-documents', (req, res) => {
-    const customerId = 1; // Replace with dynamic customer ID
+    const customerId = req.query.customerId || 1; // Use query param if provided
     const query = `
         SELECT 
             document_id, 

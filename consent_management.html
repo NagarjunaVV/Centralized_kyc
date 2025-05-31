@@ -111,131 +111,15 @@
                 </div>
             </div>
         </div>
-
-        <!-- Add New Access Request Button -->
-<div class="text-end mb-3">
-    <button class="btn btn-primary" onclick="featureComingSoon()">
-        <i class="bi bi-plus-circle"></i> New Access Request
-    </button>
-</div>
-
-<!-- New Access Request Modal -->
-<div class="modal fade" id="newAccessRequestModal" tabindex="-1" aria-labelledby="newAccessRequestModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="newAccessRequestModalLabel">New Access Request</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form id="newAccessRequestForm">
-                    <div class="mb-3">
-                        <label for="bankSelect" class="form-label">Select Bank</label>
-                        <select class="form-select" id="bankSelect" required>
-                            <!-- Banks will be dynamically loaded here -->
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label for="documentSelect" class="form-label">Select Document</label>
-                        <select class="form-select" id="documentSelect" required>
-                            <!-- Documents will be dynamically loaded here -->
-                        </select>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-success" onclick="submitAccessRequest()">Submit Request</button>
-            </div>
-        </div>
     </div>
-</div>
 
 <script>
-    async function loadBanks() {
-        try {
-            const response = await fetch('/api/banks');
-            if (!response.ok) {
-                throw new Error('Failed to fetch banks');
-            }
-
-            const banks = await response.json();
-            const bankSelect = document.getElementById('bankSelect');
-            bankSelect.innerHTML = '<option value="">Select a bank...</option>';
-
-            banks.forEach(bank => {
-                bankSelect.innerHTML += `<option value="${bank.bank_id}">${bank.bank_name}</option>`;
-            });
-        } catch (error) {
-            console.error('Error loading banks:', error);
-            alert('Failed to load banks. Please try again later.');
-        }
-    }
-
-    async function loadDocuments() {
-        try {
-            const response = await fetch('/api/kyc-documents');
-            if (!response.ok) {
-                throw new Error('Failed to fetch documents');
-            }
-
-            const documents = await response.json();
-            const documentSelect = document.getElementById('documentSelect');
-            documentSelect.innerHTML = '<option value="">Select a document...</option>';
-
-            documents.forEach(doc => {
-                documentSelect.innerHTML += `<option value="${doc.document_id}">${doc.document_type}</option>`;
-            });
-        } catch (error) {
-            console.error('Error loading documents:', error);
-            alert('Failed to load documents. Please try again later.');
-        }
-    }
-
-    async function submitAccessRequest() {
-        const bankId = document.getElementById('bankSelect').value;
-        const documentId = document.getElementById('documentSelect').value;
-
-        if (!bankId || !documentId) {
-            alert('Please select both a bank and a document.');
-            return;
-        }
-
-        try {
-            const response = await fetch('/api/consent-requests', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ bankId, documentId, customerId: 1 }) // Replace with dynamic customer ID
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to create access request');
-            }
-
-            alert('Access request submitted successfully');
-            document.getElementById('newAccessRequestForm').reset();
-            const modal = bootstrap.Modal.getInstance(document.getElementById('newAccessRequestModal'));
-            modal.hide();
-            loadConsents(); // Reload the consent table
-        } catch (error) {
-            console.error('Error submitting access request:', error);
-            alert('Failed to submit access request. Please try again later.');
-        }
-    }
-
-    // Load banks and documents when the modal is opened
-    document.getElementById('newAccessRequestModal').addEventListener('show.bs.modal', () => {
-        loadBanks();
-        loadDocuments();
-    });
-
     async function loadConsents() {
         try {
             const response = await fetch('/api/consent-requests');
             if (!response.ok) {
                 throw new Error('Failed to fetch consents');
             }
-
             const consents = await response.json();
             updateConsentTable(consents);
         } catch (error) {
@@ -248,26 +132,51 @@
         const consentList = document.getElementById('consent-list');
         consentList.innerHTML = '';
 
+        if (!consents.length) {
+            consentList.innerHTML = `
+                <tr>
+                    <td colspan="5" class="text-center">No consent records found</td>
+                </tr>
+            `;
+            return;
+        }
+
         consents.forEach(consent => {
-            const row = `
+            const status = consent.consent_status || 'Pending';
+            const bank = consent.bank_name || 'N/A';
+            const date = consent.request_date
+                ? new Date(consent.request_date).toLocaleString()
+                : 'N/A';
+            const badgeClass =
+                status === 'Granted' || status === 'Approved' ? 'bg-success'
+                : status === 'Revoked' || status === 'Rejected' ? 'bg-danger'
+                : 'bg-warning text-dark';
+
+            let actionsHtml = '';
+            if (status === 'Pending') {
+                actionsHtml = `
+                    <button class="btn btn-sm btn-success me-2" onclick="updateConsentStatus(${consent.request_id}, 'Approved')">Accept</button>
+                    <button class="btn btn-sm btn-danger" onclick="updateConsentStatus(${consent.request_id}, 'Rejected')">Reject</button>
+                `;
+            } else {
+                actionsHtml = `<span class="${badgeClass} badge">${status}</span>`;
+            }
+
+            consentList.innerHTML += `
                 <tr>
                     <td>${consent.request_id}</td>
-                    <td>${consent.bank_name}</td>
+                    <td>${bank}</td>
                     <td>
-                        <span class="badge ${consent.status === 'Granted' ? 'bg-success' : consent.status === 'Revoked' ? 'bg-danger' : 'bg-warning text-dark'}">
-                            ${consent.status}
+                        <span class="badge ${badgeClass}">
+                            ${status}
                         </span>
                     </td>
-                    <td>${new Date(consent.request_date).toLocaleString()}</td>
+                    <td>${date}</td>
                     <td>
-                        ${consent.status === 'Pending' ? `
-                            <button class="btn btn-sm btn-success" onclick="updateConsentStatus(${consent.request_id}, 'Approved')">Approve</button>
-                            <button class="btn btn-sm btn-danger" onclick="updateConsentStatus(${consent.request_id}, 'Rejected')">Reject</button>
-                        ` : 'Completed'}
+                        ${actionsHtml}
                     </td>
                 </tr>
             `;
-            consentList.innerHTML += row;
         });
     }
 
@@ -283,7 +192,6 @@
                 throw new Error('Failed to update consent status');
             }
 
-            alert(`Consent ${status.toLowerCase()} successfully`);
             loadConsents();
         } catch (error) {
             console.error('Error updating consent status:', error);
@@ -293,10 +201,6 @@
 
     function logout() {
         window.location.replace("customer_login.html");
-    }
-
-    function featureComingSoon() {
-        alert('This feature will be implemented in future.');
     }
 
     document.addEventListener('DOMContentLoaded', loadConsents);
