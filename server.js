@@ -67,6 +67,12 @@ app.post('/api/login', (req, res) => {
         }
 
         res.json({ message: 'Login successful!' });
+        insertAuditLog({
+            user_id: user.user_id,
+            role: 'Customer',
+            action: `Customer login (${user.email})`,
+            ip_address: req.ip
+        });
     });
 });
 
@@ -165,6 +171,12 @@ app.post('/api/bank/login', (req, res) => {
         }
 
         res.json({ message: 'Login successful!' });
+        insertAuditLog({
+            user_id: user.user_id,
+            role: 'Bank_Official',
+            action: `Bank login (${user.email})`,
+            ip_address: req.ip
+        });
     });
 });
 
@@ -192,6 +204,12 @@ app.post('/api/admin/login', (req, res) => {
         }
 
         res.json({ message: 'Login successful!' });
+        insertAuditLog({
+            user_id: user.user_id,
+            role: 'Admin',
+            action: `Admin login (${user.email})`,
+            ip_address: req.ip
+        });
     });
 });
 
@@ -766,6 +784,12 @@ app.post('/api/kyc-documents', upload.single('documentFile'), async (req, res) =
 
         await db.promise().commit();
         res.json({ message: 'Document uploaded successfully. Please apply for verification.' });
+        insertAuditLog({
+            user_id: null, // Set to actual user_id if available
+            role: 'Customer',
+            action: `KYC document uploaded: ${documentType} (${documentNumber})`,
+            ip_address: req.ip
+        });
 
     } catch (error) {
         await db.promise().rollback();
@@ -989,6 +1013,15 @@ app.put('/api/verification-requests/:requestId/status', async (req, res) => {
             [status, request.document_id]
         );
 
+        if (status === 'Approved') {
+            insertAuditLog({
+                user_id: null, // Set to actual bank official user_id if available
+                role: 'Bank_Official',
+                action: `Consent request approved (request_id: ${requestId})`,
+                ip_address: req.ip
+            });
+        }
+
         res.json({ message: `Verification request ${status.toLowerCase()} successfully` });
     } catch (error) {
         console.error('Error updating verification request status:', error);
@@ -1040,4 +1073,13 @@ async function loadAuditLogs() {
             </tr>
         `;
     }
+}
+function insertAuditLog({ user_id, role, action, ip_address }) {
+    const query = `
+        INSERT INTO Audit_Logs (user_id, role, action, ip_address)
+        VALUES (?, ?, ?, ?)
+    `;
+    db.query(query, [user_id, role, action, ip_address || null], (err) => {
+        if (err) console.error('Error inserting audit log:', err.message);
+    });
 }

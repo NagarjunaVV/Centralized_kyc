@@ -334,11 +334,19 @@
             documentSelect.innerHTML = '<option value="">Select Document</option>';
             if (!customerId) return;
             try {
-                // Get all approved consent document_ids for this customer
-                const approvedDocIds = await getApprovedConsentDocumentIds(customerId);
+                // Get all consent requests for this customer
+                const resConsents = await fetch('/api/consent-requests');
+                const allConsents = await resConsents.json();
+                // Get document_ids that are Approved for this customer
+                const approvedDocIds = allConsents
+                    .filter(c => c.customer_id == customerId && c.consent_status === 'Approved')
+                    .map(c => c.document_id);
 
-                const res = await fetch(`/api/all-kyc-documents?customerId=${customerId}`);
-                const docs = await res.json();
+                // Get all KYC documents for this customer
+                const resDocs = await fetch(`/api/all-kyc-documents?customerId=${customerId}`);
+                const docs = await resDocs.json();
+
+                // Only show documents NOT in approvedDocIds
                 docs
                   .filter(doc => !approvedDocIds.includes(doc.document_id))
                   .forEach(doc => {

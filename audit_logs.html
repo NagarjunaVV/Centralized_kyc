@@ -138,7 +138,11 @@
                     const errorData = await response.json();
                     throw new Error(errorData.error || 'Failed to fetch audit logs');
                 }
-                const logs = await response.json();
+                let logs = await response.json();
+                logs = logs.map(log => ({
+                    ...log,
+                    user_id: log.user_name || log.user_id
+                }));
                 updateLogsTable(logs);
             } catch (error) {
                 console.error('Error in loadAuditLogs:', error);
