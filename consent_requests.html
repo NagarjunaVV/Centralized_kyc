@@ -346,9 +346,9 @@
                 const resDocs = await fetch(`/api/all-kyc-documents?customerId=${customerId}`);
                 const docs = await resDocs.json();
 
-                // Only show documents NOT in approvedDocIds
+                // Only show documents that are verified (Approved), not Rejected, and not already consented
                 docs
-                  .filter(doc => !approvedDocIds.includes(doc.document_id))
+                  .filter(doc => doc.verification_status === 'Approved' && !approvedDocIds.includes(doc.document_id))
                   .forEach(doc => {
                     documentSelect.innerHTML += `<option value="${doc.document_id}">${doc.document_type} (${doc.document_number})</option>`;
                   });
