@@ -122,9 +122,38 @@
 
         <!-- Add Request Access Button -->
         <div class="text-end mb-3">
-            <button class="btn btn-primary" onclick="featureComingSoon()">
+            <button class="btn btn-primary" onclick="showConsentModal()">
                 <i class="bi bi-plus-circle"></i> New Access Request
             </button>
+        </div>
+
+        <!-- Consent Request Modal -->
+        <div class="modal fade" id="consentModal" tabindex="-1" aria-labelledby="consentModalLabel" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content text-dark">
+              <div class="modal-header">
+                <h5 class="modal-title" id="consentModalLabel">New Consent Request</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <form id="consentRequestForm">
+                  <div class="mb-3">
+                    <label for="customerSelect" class="form-label">Customer Name</label>
+                    <select class="form-select" id="customerSelect" required>
+                      <option value="">Select Customer</option>
+                    </select>
+                  </div>
+                  <div class="mb-3">
+                    <label for="documentSelect" class="form-label">Document</label>
+                    <select class="form-select" id="documentSelect" required>
+                      <option value="">Select Document</option>
+                    </select>
+                  </div>
+                  <button type="submit" class="btn btn-success w-100">Request</button>
+                </form>
+              </div>
+            </div>
+          </div>
         </div>
     </div>
 
@@ -215,6 +244,78 @@
         function featureComingSoon() {
             alert('This feature will be implemented later');
         }
+
+        let consentModal = null;
+
+        function showConsentModal() {
+            if (!consentModal) {
+                consentModal = new bootstrap.Modal(document.getElementById('consentModal'));
+            }
+            loadCustomersForConsent();
+            consentModal.show();
+        }
+
+        async function loadCustomersForConsent() {
+            // Fetch customers
+            const customerSelect = document.getElementById('customerSelect');
+            customerSelect.innerHTML = '<option value="">Select Customer</option>';
+            try {
+                const res = await fetch('/api/customers');
+                const customers = await res.json();
+                customers.forEach(c => {
+                    customerSelect.innerHTML += `<option value="${c.customer_id}">${c.full_name}</option>`;
+                });
+            } catch (e) {
+                customerSelect.innerHTML = '<option value="">Failed to load</option>';
+            }
+            // Reset document select
+            document.getElementById('documentSelect').innerHTML = '<option value="">Select Document</option>';
+        }
+
+        document.getElementById('customerSelect').addEventListener('change', async function() {
+            const customerId = this.value;
+            const documentSelect = document.getElementById('documentSelect');
+            documentSelect.innerHTML = '<option value="">Select Document</option>';
+            if (!customerId) return;
+            try {
+                const res = await fetch(`/api/all-kyc-documents?customerId=${customerId}`);
+                const docs = await res.json();
+                docs.forEach(doc => {
+                    documentSelect.innerHTML += `<option value="${doc.document_id}">${doc.document_type} (${doc.document_number})</option>`;
+                });
+            } catch (e) {
+                documentSelect.innerHTML = '<option value="">Failed to load</option>';
+            }
+        });
+
+        document.getElementById('consentRequestForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const customerId = document.getElementById('customerSelect').value;
+            const documentId = document.getElementById('documentSelect').value;
+            const bankId = sessionStorage.getItem('bank_id') || 1; // Replace with actual bank id logic
+
+            if (!customerId || !documentId) {
+                alert('Please select both customer and document.');
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/consent-requests', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ customerId, documentId, bankId })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    consentModal.hide();
+                    loadConsentRequests();
+                } else {
+                    alert(data.error || 'Failed to create consent request');
+                }
+            } catch (error) {
+                alert('Failed to create consent request');
+            }
+        });
 
         document.addEventListener('DOMContentLoaded', loadConsentRequests);
     </script>

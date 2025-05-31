@@ -202,6 +202,9 @@
                                 <td>${customer.phone_number}</td>
                                 <td>${doc.document_type}</td>
                                 <td>
+                                    <button class="btn btn-sm btn-info" onclick="viewDocument('${doc.file_path}')">
+                                        <i class="bi bi-eye"></i> View
+                                    </button>
                                     ${getActionButtons(doc)}
                                 </td>
                             </tr>
@@ -210,6 +213,15 @@
                     });
                 }
             });
+        }
+
+        // Responsive viewDocument function (same as kyc_documents.html)
+        function viewDocument(filePath) {
+            if (!filePath || filePath === 'undefined' || filePath === undefined) {
+                alert('Document file not found');
+                return;
+            }
+            window.open(`/uploads/${filePath}`, '_blank');
         }
 
         function getActionButtons(doc) {

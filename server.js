@@ -364,6 +364,8 @@ app.get('/api/customers', async (req, res) => {
                 kd.customer_id,
                 kd.document_id,
                 kd.document_type,
+                kd.document_number,
+                kd.file_path,
                 kd.verification_status,
                 vr.request_id
             FROM KYC_Documents kd
