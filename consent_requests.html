@@ -205,6 +205,20 @@
             }
 
             requests.forEach(request => {
+                let statusHtml = `<span class="badge ${getBadgeClass(request.consent_status)}">${request.consent_status}</span>`;
+                let viewBtn = '';
+
+                // Show view button if approved and file_path is available
+                if (request.consent_status === 'Granted' || request.consent_status === 'Approved') {
+                    if (request.file_path) {
+                        viewBtn = `
+                            <button class="btn btn-sm btn-info ms-2" onclick="viewDocument('${request.file_path}')">
+                                <i class="bi bi-eye"></i> View
+                            </button>
+                        `;
+                    }
+                }
+
                 const row = `
                     <tr>
                         <td>${request.request_id}</td>
@@ -212,9 +226,8 @@
                         <td>${request.document_type || 'N/A'}</td>
                         <td>${new Date(request.request_date).toLocaleDateString()}</td>
                         <td>
-                            <span class="badge ${getBadgeClass(request.consent_status)}">
-                                ${request.consent_status}
-                            </span>
+                            ${statusHtml}
+                            ${viewBtn}
                         </td>
                     </tr>
                 `;
@@ -272,22 +285,6 @@
             document.getElementById('documentSelect').innerHTML = '<option value="">Select Document</option>';
         }
 
-        document.getElementById('customerSelect').addEventListener('change', async function() {
-            const customerId = this.value;
-            const documentSelect = document.getElementById('documentSelect');
-            documentSelect.innerHTML = '<option value="">Select Document</option>';
-            if (!customerId) return;
-            try {
-                const res = await fetch(`/api/all-kyc-documents?customerId=${customerId}`);
-                const docs = await res.json();
-                docs.forEach(doc => {
-                    documentSelect.innerHTML += `<option value="${doc.document_id}">${doc.document_type} (${doc.document_number})</option>`;
-                });
-            } catch (e) {
-                documentSelect.innerHTML = '<option value="">Failed to load</option>';
-            }
-        });
-
         document.getElementById('consentRequestForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const customerId = document.getElementById('customerSelect').value;
@@ -316,6 +313,49 @@
                 alert('Failed to create consent request');
             }
         });
+
+        async function getApprovedConsentDocumentIds(customerId) {
+            try {
+                const res = await fetch('/api/consent-requests');
+                if (!res.ok) return [];
+                const allConsents = await res.json();
+                // Only consider consents for this customer that are Approved
+                return allConsents
+                    .filter(c => c.customer_id == customerId && c.consent_status === 'Approved')
+                    .map(c => c.document_id);
+            } catch {
+                return [];
+            }
+        }
+
+        document.getElementById('customerSelect').addEventListener('change', async function() {
+            const customerId = this.value;
+            const documentSelect = document.getElementById('documentSelect');
+            documentSelect.innerHTML = '<option value="">Select Document</option>';
+            if (!customerId) return;
+            try {
+                // Get all approved consent document_ids for this customer
+                const approvedDocIds = await getApprovedConsentDocumentIds(customerId);
+
+                const res = await fetch(`/api/all-kyc-documents?customerId=${customerId}`);
+                const docs = await res.json();
+                docs
+                  .filter(doc => !approvedDocIds.includes(doc.document_id))
+                  .forEach(doc => {
+                    documentSelect.innerHTML += `<option value="${doc.document_id}">${doc.document_type} (${doc.document_number})</option>`;
+                  });
+            } catch (e) {
+                documentSelect.innerHTML = '<option value="">Failed to load</option>';
+            }
+        });
+
+        function viewDocument(filePath) {
+            if (!filePath || filePath === 'undefined') {
+                alert('Document file not found');
+                return;
+            }
+            window.open(`/uploads/${filePath}`, '_blank');
+        }
 
         document.addEventListener('DOMContentLoaded', loadConsentRequests);
     </script>

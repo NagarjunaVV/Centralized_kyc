@@ -98,7 +98,8 @@
                         <thead>
                             <tr>
                                 <th>Consent ID</th>
-                                <th>Bank</th>
+                                <th>Bank ID</th>
+                                <th>Document</th>
                                 <th>Status</th>
                                 <th>Date</th>
                                 <th>Actions</th>
@@ -135,7 +136,7 @@
         if (!consents.length) {
             consentList.innerHTML = `
                 <tr>
-                    <td colspan="5" class="text-center">No consent records found</td>
+                    <td colspan="6" class="text-center">No consent records found</td>
                 </tr>
             `;
             return;
@@ -143,7 +144,8 @@
 
         consents.forEach(consent => {
             const status = consent.consent_status || 'Pending';
-            const bank = consent.bank_name || 'N/A';
+            const bankId = (consent.bank_id !== null && consent.bank_id !== undefined) ? consent.bank_id : 'N/A';
+            const documentType = consent.document_type || 'N/A';
             const date = consent.request_date
                 ? new Date(consent.request_date).toLocaleString()
                 : 'N/A';
@@ -165,7 +167,8 @@
             consentList.innerHTML += `
                 <tr>
                     <td>${consent.request_id}</td>
-                    <td>${bank}</td>
+                    <td>${bankId}</td>
+                    <td>${documentType}</td>
                     <td>
                         <span class="badge ${badgeClass}">
                             ${status}

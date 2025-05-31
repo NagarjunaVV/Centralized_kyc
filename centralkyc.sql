@@ -117,4 +117,3 @@ CREATE TABLE Audit_Logs (
     FOREIGN KEY (user_id) REFERENCES User_Authentication(user_id) ON DELETE CASCADE
 );
 select * from audit_logs;
-

@@ -905,7 +905,10 @@ app.get('/api/consent-requests', async (req, res) => {
                 cr.bank_id,
                 b.bank_name,
                 c.full_name AS customer_name,
+                cr.customer_id,         -- <--- add this line
+                cr.document_id,
                 kd.document_type,
+                kd.file_path,
                 cr.request_date,
                 cr.status AS consent_status
             FROM consent_requests cr
